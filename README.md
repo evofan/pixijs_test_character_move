@@ -1,0 +1,1 @@
+# pixijs_test_character_move
