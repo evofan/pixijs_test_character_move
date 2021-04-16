@@ -43,23 +43,29 @@ let animate = () => {
   renderer.render(stage);
   stats.begin();
   requestAnimationFrame(animate);
+
+  // GameLoop
+
   stats.end();
 };
+
+// function
+const gamePlay = () => {};
+
+const gameEnd = () => {};
 
 // loader
 let loader: PIXI.Loader = new PIXI.Loader();
 
 // asset
 const ASSET_BG: string = ASSETS.ASSET_BG;
-// const ASSET_OBJ1: string = ASSETS.ASSET_OBJ1;
+const ASSET_OBJ1: string = ASSETS.ASSET_OBJ1;
 // const ASSET_OBJ2: string = ASSETS.ASSET_OBJ2;
 // const ASSET_OBJ3: string = ASSETS.ASSET_OBJ3;
 // const ASSET_OBJ4: string = ASSETS.ASSET_OBJ4;
 
 // init
 let bg: PIXI.Sprite;
-let particleResourceAry: PIXI.Texture[] = [];
-let particlesEmitflag: Boolean = true;
 
 // container
 let container: PIXI.Container = new PIXI.Container();
@@ -77,6 +83,8 @@ stage.addChild(container);
 // container for add particle
 let container_effect: PIXI.Container = new PIXI.Container();
 
+let cat: PIXI.Sprite;
+
 // text
 let text_libVersion: PIXI.Text,
   text_description: PIXI.Text,
@@ -88,7 +96,7 @@ if (ASSET_BG === "") {
 } else {
   loader.add("bg_data", ASSET_BG);
 }
-// loader.add("obj_1_data", ASSET_OBJ1);
+loader.add("obj_1_data", ASSET_OBJ1);
 // loader.add("obj_2_data", ASSET_OBJ2);
 // loader.add("obj_3_data", ASSET_OBJ3);
 // loader.add("obj_4_data", ASSET_OBJ4);
@@ -122,6 +130,12 @@ loader.load((loader: PIXI.Loader, resources: any) => {
     bg = new PIXI.Sprite(resources.bg_data.texture);
     container.addChild(bg);
   }
+
+  // cat
+  cat = new PIXI.Sprite(resources.obj_1_data.texture);
+  container.addChild(cat);
+  cat.x = WIDTH / 2 - cat.width / 2;
+  cat.y = HEIGHT / 2 - cat.height / 2;
 
   // particle resource reference
   // particleResourceAry[0] = resources.obj_1_data.texture;
@@ -192,3 +206,28 @@ loader.load((loader: PIXI.Loader, resources: any) => {
 loader.onError.add(() => {
   throw Error("load error ...");
 });
+
+// Pixiをセットアップし、テクスチャアトラスファイルをロードします - ロードされたときに `setup`関数を呼び出します
+/*
+  function setup() {
+    // ゲームスプライトを初期化し、ゲームの `state`を` play`に設定して 'gameLoop'を起動します
+  }
+
+  function gameLoop(delta) {
+    // 現在のゲームの状態をループで実行し、スプライトをレンダリングします。
+  }
+
+  function play(delta) {
+    // すべてのゲームロジックはここにあります
+  }
+
+  function end() {
+    // ゲーム終了時に実行されるべきすべてのコードがあります。
+  }
+  */
+
+//The game's helper functions:
+// ゲームのヘルパー関数：
+//　「キーボード（keyboard）」、「ヒットテスト（hitTestRectangle）」「コンテイン（contain）」「ランダム数値（randomInt）」
+
+// 各セクションがどのように機能するかを見ながら、これをゲームの世界地図として使用します。
