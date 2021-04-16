@@ -45,14 +45,10 @@ let animate = () => {
   requestAnimationFrame(animate);
 
   // GameLoop
+  gameLoop(deltaTime);
 
   stats.end();
 };
-
-// function
-const gamePlay = () => {};
-
-const gameEnd = () => {};
 
 // loader
 let loader: PIXI.Loader = new PIXI.Loader();
@@ -60,7 +56,7 @@ let loader: PIXI.Loader = new PIXI.Loader();
 // asset
 const ASSET_BG: string = ASSETS.ASSET_BG;
 const ASSET_OBJ1: string = ASSETS.ASSET_OBJ1;
-// const ASSET_OBJ2: string = ASSETS.ASSET_OBJ2;
+const ASSET_OBJ2: string = ASSETS.ASSET_OBJ2;
 // const ASSET_OBJ3: string = ASSETS.ASSET_OBJ3;
 // const ASSET_OBJ4: string = ASSETS.ASSET_OBJ4;
 
@@ -84,6 +80,8 @@ stage.addChild(container);
 let container_effect: PIXI.Container = new PIXI.Container();
 
 let cat: PIXI.Sprite;
+let gameState: string = "init";
+let atras: PIXI.Sprite;
 
 // text
 let text_libVersion: PIXI.Text,
@@ -97,7 +95,7 @@ if (ASSET_BG === "") {
   loader.add("bg_data", ASSET_BG);
 }
 loader.add("obj_1_data", ASSET_OBJ1);
-// loader.add("obj_2_data", ASSET_OBJ2);
+loader.add("obj_2_data", ASSET_OBJ2); //   loader.add("images/atras.json").load(setup);
 // loader.add("obj_3_data", ASSET_OBJ3);
 // loader.add("obj_4_data", ASSET_OBJ4);
 
@@ -136,6 +134,46 @@ loader.load((loader: PIXI.Loader, resources: any) => {
   container.addChild(cat);
   cat.x = WIDTH / 2 - cat.width / 2;
   cat.y = HEIGHT / 2 - cat.height / 2;
+
+  //atras = new PIXI.Sprite(resources.obj_2_data.texture);
+  //container.addChild(atras); // noerr noview
+
+  //let id = new PIXI.Sprite(resources.obj_2_data);
+  //container.addChild(id);
+  //console.log(id);
+  //let id = resources["images/atras.json"].textures;
+
+  // エイリアスを使ってairplaneを作成する
+  //let airplane = new PIXI.Sprite(id["pic_airplane"]);
+  //container.addChild(airplane);
+  //airplane.y = 100;
+
+    // （１）TextureCacheにアクセス
+    // let bicycleTexture = TextureCache["pic_bicycle.png"];
+    // bicycle = new Sprite(bicycleTexture);
+    // app.stage.addChild(bicycle);
+  
+    //（２）loaderのresourcesを使ってテクスチャにアクセスする
+  // let car = new PIXI.Sprite(resources["images/atras.json"].textures["pic_car.png"]);
+  let car = new PIXI.Sprite(resources.obj_2_data.textures["pic_car.png"]);
+  car.x = 100;
+  car.y = 100;
+  container.addChild(car);
+
+  let airplane = new PIXI.Sprite(resources.obj_2_data.textures["pic_airplane.png"]);
+  airplane.x = 400;
+  airplane.y = 100;
+  container.addChild(airplane);
+
+  let bicycle = new PIXI.Sprite(resources.obj_2_data.textures["pic_bicycle.png"]);
+  bicycle.x = 100;
+  bicycle.y = 300;
+  container.addChild(bicycle);
+
+  let pic_man2= new PIXI.Sprite(resources.obj_2_data.textures["pic_man2.png"]);
+  pic_man2.x = 400;
+  pic_man2.y = 300;
+  container.addChild(pic_man2);
 
   // particle resource reference
   // particleResourceAry[0] = resources.obj_1_data.texture;
@@ -199,13 +237,35 @@ loader.load((loader: PIXI.Loader, resources: any) => {
   text_fps.y = HEIGHT - text_fps.height - offset;
 
   // app start
-  requestAnimationFrame(animate);
+  // requestAnimationFrame(animate);
+
+  gameSetup();
 });
 
 // err
 loader.onError.add(() => {
   throw Error("load error ...");
 });
+
+// 私はあなたが今あなたがゲームを作り始めるのに必要なすべてのスキルを持っているとあなたに言いました。
+// 何？ あなたは私を信じていませんか？ それを証明しましょう！
+// トレジャーハンターと呼ばれる単純なオブジェクトコレクションと敵の回避ゲームの作り方を詳しく見てみましょう。
+// （examplesフォルダにあります）
+
+// トレジャーハンターは、これまでに学んだツールを使用して作成できる最も簡単な完成ゲームの1つの好例です。
+// キーボードの矢印キーを使って、探検家が宝物を見つけて出口まで運んでください。
+// 6つのブロブモンスターがダンジョンの壁の間を上下に移動し、探検家にぶつかると半透明になり、右上隅のヘルスメーターが縮小します。
+// すべての健康状態が使い果たされると、ステージに「You Lost！」と表示されます。
+// 探検家が宝物のある出口にたどり着くと、「You Won！」と表示されます。
+
+// これは基本的なプロトタイプですが、トレジャーハンターには、より大きなゲームで見つけることができるほとんどの要素が含まれています。
+// テクスチャアトラスグラフィック、インタラクティブ機能、衝突、複数のゲームシーンなどです。
+// 自分のゲームの開始点として使用できるように、ゲームがどのようにまとめられたかを見ていきましょう。
+
+// The code structure（コードの構築方法）
+
+// treasureHunter.htmlファイルを開くと、すべてのゲームコードが1つの大きなファイルにまとめられていることがわかります。
+// これは、すべてのコードがどのように編成されているかを俯瞰したものです。
 
 // Pixiをセットアップし、テクスチャアトラスファイルをロードします - ロードされたときに `setup`関数を呼び出します
 /*
@@ -226,8 +286,99 @@ loader.onError.add(() => {
   }
   */
 
+// 各セクションがどのように機能するかを見ながら、これをゲームの世界地図として使用します。
+
+// function
+const gameLoop = (delta: number) => {
+  // console.log("gameLoop()", delta);
+  // 現在のゲームの状態をループで実行し、スプライトをレンダリングします。
+};
+
+const gamePlay = () => {
+  console.log("gamePlay()");
+  // すべてのゲームロジックはここにあります
+};
+
+const gameEnd = () => {
+  console.log("gameEnd()");
+  // ゲーム終了時に実F行されるべきすべてのコードがあります。
+};
+
+// テクスチャアトラス画像がロードされるとすぐに、setup()関数が実行されます。
+// それは一度だけ実行され、あなたはあなたのゲームのために一度だけセットアップタスクを実行することを可能にします。
+// オブジェクト、スプライト、ゲームシーンの作成や初期化、データ配列の生成、ロードされたJSONゲームデータの解析を行うのに最適な場所です。
+
+// これがTreasure Hunterのセットアップ機能とそれが実行するタスクの概要です。
+
+// 最後の2行のコード、state = play。 そしてgameLoop()がおそらく最も重要です。
+// PixiのティッカーにgameLoop()を追加すると、ゲームのエンジンがオンになり、play()関数が連続ループで呼び出されます。
+// しかし、それがどのように機能するのかを見る前に、setup()関数内の特定のコードが何をするのか見てみましょう。
+const gameSetup = () => {
+  console.log("gameSetup()");
+  // ゲームスプライトを初期化し、ゲームの `state`を` play`に設定して 'gameLoop'を起動します
+
+  //Create the `gameScene` group
+
+  //Create the `door` sprite
+
+  //Create the `player` sprite
+
+  //Create the `treasure` sprite
+
+  //Make the enemies
+
+  //Create the health bar
+
+  //Add some text for the game over message
+
+  //Create a `gameOverScene` group
+
+  //Assign the player's keyboard controllers
+
+  // ゲームのステートを`play`に設定する
+  // state = play;
+  gameState = "play";
+
+  // ゲームのループをスタートする
+  // app.ticker.add(delta => gameLoop(delta));
+
+  // app start
+  requestAnimationFrame(animate);
+};
+
 //The game's helper functions:
 // ゲームのヘルパー関数：
 //　「キーボード（keyboard）」、「ヒットテスト（hitTestRectangle）」「コンテイン（contain）」「ランダム数値（randomInt）」
 
-// 各セクションがどのように機能するかを見ながら、これをゲームの世界地図として使用します。
+
+// テクスチャアトラスのロード
+/*
+loader.add("images/atras.json").load(setup);
+
+let bicycle, car, airplane, id;
+
+function setup() {
+  // テクスチャアトラス枠からスプライトを作る方法は3つある
+
+  // （１）TextureCacheにアクセス
+  let bicycleTexture = TextureCache["pic_bicycle.png"];
+  bicycle = new Sprite(bicycleTexture);
+  app.stage.addChild(bicycle);
+
+  //（２）loaderのresourcesを使ってテクスチャにアクセスする
+  car = new Sprite(resources["images/atras.json"].textures["pic_car.png"]);
+  car.x = 100;
+  app.stage.addChild(car);
+
+  // 画面中央に配置
+  car.y = app.stage.width / 2 - app.stage.height / 2;
+
+  // (3) すべてのテクスチャアトラスに対して `id`というオプションのエイリアスを作成する
+  id = PIXI.loader.resources["images/atras.json"].textures;
+
+  // エイリアスを使ってairplaneを作成する
+  airplane = new Sprite(id["pic_airplane.png"]);
+  app.stage.addChild(airplane);
+  airplane.y = 100;
+}
+*/

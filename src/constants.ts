@@ -9,13 +9,13 @@ export const STAGES: { WIDTH: number; HEIGHT: number; BG_COLOR: number } = {
 export const ASSETS: {
   ASSET_BG: string;
   ASSET_OBJ1: string;
-  // ASSET_OBJ2: string;
+  ASSET_OBJ2: string;
   // ASSET_OBJ3: string;
   // ASSET_OBJ4: string;
 } = {
   ASSET_BG: "assets/images/pic_bg_night.jpg",
-  ASSET_OBJ1: "assets/images/cat.png"
-  // ASSET_OBJ2: "assets/images/pic_spark2.png",
+  ASSET_OBJ1: "assets/images/cat.png",
+  ASSET_OBJ2: "assets/images/atras.json"
   // ASSET_OBJ3: "assets/images/pic_spark3.png",
   // ASSET_OBJ4: "assets/images/pic_spark4.png"
   // TODO: load manifest file
