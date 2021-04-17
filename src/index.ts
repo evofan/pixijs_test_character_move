@@ -3,7 +3,8 @@ import * as PIXI from "pixi.js";
 import { WebpackPluginInstance as loader } from "webpack";
 // window.PIXI = PIXI;
 import { STAGES, ASSETS, GAMES } from "./constants";
-import { setText } from "./setText";
+import { setText } from "./helper/setText";
+import { randomInt } from "./helper/randomInt";
 import Stats from "stats.js";
 
 console.log(PIXI);
@@ -89,6 +90,9 @@ let dungeon: PIXI.Sprite;
 let door: PIXI.Sprite;
 let explorer: PIXI.Sprite;
 let treasure: PIXI.Sprite;
+
+// 体力バー用コンテナ
+let healthBar: PIXI.Container = new PIXI.Container();
 
 // text
 let text_libVersion: PIXI.Text,
@@ -258,6 +262,15 @@ const gameLoop = (delta: number) => {
 const gamePlay = () => {
   console.log("gamePlay()");
   // すべてのゲームロジックはここにあります
+
+  // 探検家を動かし、それをダンジョンの中に閉じ込めます
+  // ブロブモンスターを動かします
+  // ブロブと探検家の間の衝突をチェックします
+  // 探検家と宝物の間の衝突をチェックします
+  // 宝物とドアの間の衝突をチェックします
+  // ゲームが勝ったか負けたかを決めます
+  // ゲームが終了したら、ゲームの「状態」を「終了」に変更します。
+  //}
 };
 
 const gameEnd = () => {
@@ -364,7 +377,7 @@ const gameSetup = (resources: any) => {
   // gameOverSceneを表示するのが簡単になります。
   //（※シーン切り替えをスマートにする考え方）
 
-  // 3.モンスターの作成
+  // ■3.モンスターの作成
 
   // 6つのブロブ（BLOB：小さい固まり）モンスターが1つのループ内に作成されます。
   // 各ブロブにはランダムな初期位置とvelocity（速度）が与えられます。
@@ -413,6 +426,60 @@ const gameSetup = (resources: any) => {
     gameScene.addChild(blob);
   }
 
+  // ■4.ヘルス（体力）バーの作成
+
+  // Treasure Hunterをプレイすると、探検家が敵の1人に触れると、画面の右上隅にあるhealthBar（体力バー）の幅が狭くなります。
+  // この体力バーはどうやって作られたのですか？ それはちょうど同じ位置にある2つの重なっている長方形です。
+  // 後ろの黒い長方形と前の赤い長方形です。 それらは1つの体力バーグループにまとめられています。
+  // その後、体力バーがgameSceneに追加され、ステージ上に配置されます。
+
+  // 体力バーを作成する
+  // healthBar = new PIXI.Container();
+  healthBar.position.set(570, 4);
+  // healthBar.x = stage.width - 170;
+  // healthBar.y = 4;
+  gameScene.addChild(healthBar);
+
+  // 黒い背景の四角形を作成する
+  let innerBar: PIXI.Graphics = new PIXI.Graphics();
+  innerBar.beginFill(0x000000);
+  innerBar.drawRect(0, 0, 128, 8);
+  innerBar.endFill();
+  healthBar.addChild(innerBar);
+
+  // 前面の赤い長方形を作成する
+  let outerBar = new PIXI.Graphics();
+  outerBar.beginFill(0xff3300);
+  outerBar.drawRect(0, 0, 128, 8);
+  outerBar.endFill();
+  healthBar.addChild(outerBar);
+
+  // healthBar.outer = outerBar; // err
+  // outerというプロパティがhealthBarに追加されたことがわかります。
+  // 後でアクセスするのに便利なように、outerBar（赤い長方形）を参照するだけです。
+  // healthBar.outer = outerBar;
+  // それはかなりきれいで読みやすいです、それで我々はそれを守ります！
+  // あなたはこれをする必要はありません。 しかし、なぜそうではないのでしょう！
+  // つまり、赤いouterBarの幅を制御したい場合は、次のような滑らかなコードを書くことができます。
+  // healthBar.outer.width = 30;
+
+  // ■5.メッセージテキストの作成
+
+  // ゲームが終了すると、ゲームの結果に応じて「あなたは勝ちました」または「あなたは負けました」というテキストが表示されます。
+  // これはテキストスプライトを使用してそれをgameOverSceneに追加することで行われます。
+  // ゲームの開始時にgameOverSceneのvisibleプロパティはfalseに設定されているため、このテキストは表示されません。
+  // これは、メッセージテキストを作成してそれをgameOverSceneに追加するsetup関数のコードです。
+  let style = new PIXI.TextStyle({
+    fontFamily: "Futura",
+    fontSize: 64,
+    fill: "white",
+  });
+  let message = new PIXI.Text("The End!", style);
+  message.x = 120;
+  message.y = 120;
+  // gameOverScene.addChild(message);
+  gameScene.addChild(message); // 位置確認用
+
   // ゲームのステートを`play`に設定する
   // state = play;
   gameState = "play";
@@ -428,7 +495,17 @@ const gameSetup = (resources: any) => {
 // ゲームのヘルパー関数：
 //　「キーボード（keyboard）」、「ヒットテスト（hitTestRectangle）」「コンテイン（contain）」「ランダム数値（randomInt）」
 
-// The `randomInt` helper function
+//// ゲームのヘルパー関数 ////
+// →外部化
+
+/**
+ * ランダムな値を返す
+ * @param min 最小値
+ * @param max 最大値
+ * @returns 最小値以上～最大値以下の値
+ */
+/*
 const randomInt = (min: number, max: number) => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
+*/
