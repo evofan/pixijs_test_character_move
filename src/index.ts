@@ -57,7 +57,7 @@ let loader: PIXI.Loader = new PIXI.Loader();
 const ASSET_BG: string = ASSETS.ASSET_BG;
 const ASSET_OBJ1: string = ASSETS.ASSET_OBJ1;
 const ASSET_OBJ2: string = ASSETS.ASSET_OBJ2;
-// const ASSET_OBJ3: string = ASSETS.ASSET_OBJ3;
+const ASSET_OBJ3: string = ASSETS.ASSET_OBJ3;
 // const ASSET_OBJ4: string = ASSETS.ASSET_OBJ4;
 
 // init
@@ -82,6 +82,13 @@ let container_effect: PIXI.Container = new PIXI.Container();
 let cat: PIXI.Sprite;
 let gameState: string = "init";
 let atras: PIXI.Sprite;
+let gameLoopFlag: boolean = false;
+
+// game sprite
+let dungeon: PIXI.Sprite;
+let door: PIXI.Sprite;
+let explorer: PIXI.Sprite;
+let treasure: PIXI.Sprite;
 
 // text
 let text_libVersion: PIXI.Text,
@@ -95,8 +102,8 @@ if (ASSET_BG === "") {
   loader.add("bg_data", ASSET_BG);
 }
 loader.add("obj_1_data", ASSET_OBJ1);
-loader.add("obj_2_data", ASSET_OBJ2); //   loader.add("images/atras.json").load(setup);
-// loader.add("obj_3_data", ASSET_OBJ3);
+// loader.add("obj_2_data", ASSET_OBJ2); //   loader.add("images/atras.json").load(setup);
+loader.add("obj_3_data", ASSET_OBJ3);
 // loader.add("obj_4_data", ASSET_OBJ4);
 
 // Text loading
@@ -134,52 +141,6 @@ loader.load((loader: PIXI.Loader, resources: any) => {
   container.addChild(cat);
   cat.x = WIDTH / 2 - cat.width / 2;
   cat.y = HEIGHT / 2 - cat.height / 2;
-
-  //atras = new PIXI.Sprite(resources.obj_2_data.texture);
-  //container.addChild(atras); // noerr noview
-
-  //let id = new PIXI.Sprite(resources.obj_2_data);
-  //container.addChild(id);
-  //console.log(id);
-  //let id = resources["images/atras.json"].textures;
-
-  // エイリアスを使ってairplaneを作成する
-  //let airplane = new PIXI.Sprite(id["pic_airplane"]);
-  //container.addChild(airplane);
-  //airplane.y = 100;
-
-    // （１）TextureCacheにアクセス
-    // let bicycleTexture = TextureCache["pic_bicycle.png"];
-    // bicycle = new Sprite(bicycleTexture);
-    // app.stage.addChild(bicycle);
-  
-    //（２）loaderのresourcesを使ってテクスチャにアクセスする
-  // let car = new PIXI.Sprite(resources["images/atras.json"].textures["pic_car.png"]);
-  let car = new PIXI.Sprite(resources.obj_2_data.textures["pic_car.png"]);
-  car.x = 100;
-  car.y = 100;
-  container.addChild(car);
-
-  let airplane = new PIXI.Sprite(resources.obj_2_data.textures["pic_airplane.png"]);
-  airplane.x = 400;
-  airplane.y = 100;
-  container.addChild(airplane);
-
-  let bicycle = new PIXI.Sprite(resources.obj_2_data.textures["pic_bicycle.png"]);
-  bicycle.x = 100;
-  bicycle.y = 300;
-  container.addChild(bicycle);
-
-  let pic_man2= new PIXI.Sprite(resources.obj_2_data.textures["pic_man2.png"]);
-  pic_man2.x = 400;
-  pic_man2.y = 300;
-  container.addChild(pic_man2);
-
-  // particle resource reference
-  // particleResourceAry[0] = resources.obj_1_data.texture;
-  // particleResourceAry[1] = resources.obj_2_data.texture;
-  // particleResourceAry[2] = resources.obj_3_data.texture;
-  // particleResourceAry[3] = resources.obj_4_data.texture;
 
   // text
   let offset: number = 10;
@@ -239,7 +200,7 @@ loader.load((loader: PIXI.Loader, resources: any) => {
   // app start
   // requestAnimationFrame(animate);
 
-  gameSetup();
+  gameSetup(resources);
 });
 
 // err
@@ -313,7 +274,7 @@ const gameEnd = () => {
 // 最後の2行のコード、state = play。 そしてgameLoop()がおそらく最も重要です。
 // PixiのティッカーにgameLoop()を追加すると、ゲームのエンジンがオンになり、play()関数が連続ループで呼び出されます。
 // しかし、それがどのように機能するのかを見る前に、setup()関数内の特定のコードが何をするのか見てみましょう。
-const gameSetup = () => {
+const gameSetup = (resources: any) => {
   console.log("gameSetup()");
   // ゲームスプライトを初期化し、ゲームの `state`を` play`に設定して 'gameLoop'を起動します
 
@@ -335,6 +296,123 @@ const gameSetup = () => {
 
   //Assign the player's keyboard controllers
 
+  // ■1.ゲームのシーンを作成する
+
+  // setup()関数は、gameSceneとgameOverSceneという2つのコンテナグループを作成します。
+  // これらのそれぞれがステージに追加されます。
+  let gameScene: PIXI.Container = new PIXI.Container();
+  container.addChild(gameScene);
+
+  let gameOverScene: PIXI.Container = new PIXI.Container();
+  container.addChild(gameOverScene);
+  gameScene.x = 0;
+  gameScene.y = 0;
+
+  // メインゲームの一部であるスプライトはすべてgameSceneグループに追加されます。
+  // ゲーム終了時に表示されるべきゲームオーバーテキストは、gameOverSceneグループに追加されます。
+
+  // これはsetup()関数内で作成されますが、ゲームが最初に起動したときにgameOverSceneが表示されないようにする必要があります。
+  // そのため、そのvisibleプロパティはfalseに初期化されています。
+  gameOverScene.visible = false;
+
+  // ゲームが終了すると、gameOverSceneのvisibleプロパティがtrueに設定され、
+  // ゲームの終わりに表示されるテキストが表示されます。
+  // （※シーン切り替えの考え方）
+
+  // ■2.ダンジョン、ドア、探検家、宝箱の作成
+
+  // プレイヤー（探検家）、出口のドア、宝箱、ダンジョンの背景画像はすべてテクスチャアトラスフレームから作られたスプライトです。
+  // 非常に重要なことに、それらはすべてgameSceneの子（children）として追加されています。
+
+  // テクスチャアトラスフレームIDのエイリアスを作成します。
+  // id = resources["images/treasureHunter.json"].textures;
+
+  //（２）loaderのresourcesを使ってテクスチャにアクセスする
+  // let car = new PIXI.Sprite(resources["images/atras.json"].textures["pic_car.png"]);
+
+  let id: any = resources.obj_3_data.textures;
+
+  // ダンジョン
+  dungeon = new PIXI.Sprite(id["dungeon.png"]);
+  dungeon.x = 400;
+  dungeon.y = 200;
+  gameScene.addChild(dungeon);
+
+  // ドア
+  door = new PIXI.Sprite(id["door.png"]);
+  door.position.set(500, 10);
+  gameScene.addChild(door);
+
+  // プレイヤー（探検家）
+  explorer = new PIXI.Sprite(id["explorer.png"]);
+  explorer.x = 500;
+  explorer.y = 50;
+  // explorer.y = gameScene.height / 2 - explorer.height / 2;
+  // explorer.vx = 0; //errなのでオブジェクトで持たせとく？
+  // explorer.vy = 0;
+  gameScene.addChild(explorer);
+
+  // 宝箱
+  treasure = new PIXI.Sprite(id["treasure.png"]);
+  // treasure.x = gameScene.width - treasure.width - 48;
+  // treasure.y = gameScene.height / 2 - treasure.height / 2;
+  treasure.x = 500;
+  treasure.y = 90;
+  gameScene.addChild(treasure);
+
+  // それら（ダンジョン、ドア、プレイヤー、宝箱）をgameSceneグループにまとめておくと、ゲームが終了したときにgameSceneを非表示にして
+  // gameOverSceneを表示するのが簡単になります。
+  //（※シーン切り替えをスマートにする考え方）
+
+  // 3.モンスターの作成
+
+  // 6つのブロブ（BLOB：小さい固まり）モンスターが1つのループ内に作成されます。
+  // 各ブロブにはランダムな初期位置とvelocity（速度）が与えられます。
+  // 垂直方向の速度は、各ブロブに対して交互に1または-1で乗算されます。
+  // そのため、各ブロブは隣の方向とは反対方向に移動します。
+  // 作成されたそれぞれのブロブモンスターは、blobsと呼ばれる配列にプッシュ（で格納）されます。
+
+  let numberOfBlobs: number = 6,
+    spacing: number = 48,
+    xOffset: number = 150,
+    speed: number = 2,
+    direction: number = 1;
+
+  // すべてのブロブモンスターを格納するための配列
+  let blobs: PIXI.Sprite[] = [];
+
+  // `numberOfBlobs`と同数のブロブを作成します
+  for (let i: number = 0; i < numberOfBlobs; i++) {
+    // ブロブを作成する
+    let blob: PIXI.Sprite = new PIXI.Sprite(id["blob.png"]); // `xOffset`は最初のブロブが追加されるべき画面の左からの位置を決定します
+
+    // `spacing`の値に従って各ブロブを水平方向に間隔を空けます。
+    let x: number = spacing * i + xOffset;
+
+    // ブロブにランダムな「y」位置を与える
+    let y: number = randomInt(0, stage.height - blob.height);
+
+    // ブロブの位置を設定する
+    blob.x = x;
+    blob.y = y;
+
+    // ブロブの垂直方向の速度を設定します。
+    // directionは、1か-1のどちらかになります。
+    // 「1」は敵が下に移動することを意味し、「-1」はブロブが上に移動することを意味します。
+    //　`direction`を` speed`で乗算すると、ブロブの垂直方向が決まります。
+    // blob.vy = speed * direction;
+    let blob_vy: number = speed * direction; // ★後で動かすのでglobalに保存しておく
+
+    // 次のブロブの方向を逆にする
+    direction *= -1;
+
+    // ブロブを`blobs`配列にプッシュ（追加）します
+    blobs.push(blob);
+
+    // ブロブを`gameScene`に追加します
+    gameScene.addChild(blob);
+  }
+
   // ゲームのステートを`play`に設定する
   // state = play;
   gameState = "play";
@@ -343,42 +421,14 @@ const gameSetup = () => {
   // app.ticker.add(delta => gameLoop(delta));
 
   // app start
-  requestAnimationFrame(animate);
+  requestAnimationFrame(animate); // フラグ管理の代わりにここで初めてEnterFrame
 };
 
-//The game's helper functions:
+// The game's helper functions:
 // ゲームのヘルパー関数：
 //　「キーボード（keyboard）」、「ヒットテスト（hitTestRectangle）」「コンテイン（contain）」「ランダム数値（randomInt）」
 
-
-// テクスチャアトラスのロード
-/*
-loader.add("images/atras.json").load(setup);
-
-let bicycle, car, airplane, id;
-
-function setup() {
-  // テクスチャアトラス枠からスプライトを作る方法は3つある
-
-  // （１）TextureCacheにアクセス
-  let bicycleTexture = TextureCache["pic_bicycle.png"];
-  bicycle = new Sprite(bicycleTexture);
-  app.stage.addChild(bicycle);
-
-  //（２）loaderのresourcesを使ってテクスチャにアクセスする
-  car = new Sprite(resources["images/atras.json"].textures["pic_car.png"]);
-  car.x = 100;
-  app.stage.addChild(car);
-
-  // 画面中央に配置
-  car.y = app.stage.width / 2 - app.stage.height / 2;
-
-  // (3) すべてのテクスチャアトラスに対して `id`というオプションのエイリアスを作成する
-  id = PIXI.loader.resources["images/atras.json"].textures;
-
-  // エイリアスを使ってairplaneを作成する
-  airplane = new Sprite(id["pic_airplane.png"]);
-  app.stage.addChild(airplane);
-  airplane.y = 100;
-}
-*/
+// The `randomInt` helper function
+const randomInt = (min: number, max: number) => {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+};
