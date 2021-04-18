@@ -498,14 +498,180 @@ const gameSetup = (resources: any) => {
 //// ゲームのヘルパー関数 ////
 // →外部化
 
-/**
- * ランダムな値を返す
- * @param min 最小値
- * @param max 最大値
- * @returns 最小値以上～最大値以下の値
- */
 /*
 const randomInt = (min: number, max: number) => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 */
+
+// TODO: Move to helper/
+/*
+const keyboard = (value: number) => {
+  console.log("keyboard: ", value);
+  let key: any = {};
+  key.value = value;
+  key.isDown = false;
+  key.isUp = true;
+  key.press = undefined;
+  key.release = undefined;
+  //The `downHandler`
+  key.downHandler = (event: KeyboardEvent) => {
+    if (event.key === key.value) {
+      if (key.isUp && key.press) key.press();
+      key.isDown = true;
+      key.isUp = false;
+      event.preventDefault();
+    }
+  };
+
+  //The `upHandler`
+  key.upHandler = (event: KeyboardEvent) => {
+    if (event.key === key.value) {
+      if (key.isDown && key.release) key.release();
+      key.isDown = false;
+      key.isUp = true;
+      event.preventDefault();
+    }
+  };
+
+  //Attach event listeners
+  const downListener = key.downHandler.bind(key);
+  const upListener = key.upHandler.bind(key);
+
+  window.addEventListener("keydown", downListener, false);
+  window.addEventListener("keyup", upListener, false);
+
+  // Detach event listeners
+  key.unsubscribe = () => {
+    window.removeEventListener("keydown", downListener);
+    window.removeEventListener("keyup", upListener);
+  };
+
+  return key;
+};
+*/
+
+const keyboard = (keyCode: number) => {
+  console.log("keyboard()");
+  let key: any = {};
+  key.code = keyCode;
+  key.isDown = false;
+  key.isUp = true;
+  key.press = undefined;
+  key.release = undefined;
+  //The `downHandler`
+  key.downHandler = (event: KeyboardEvent) => {
+    console.log("key.downHandler");
+    if (event.keyCode === key.code) {
+      // 非推奨だが、下の書き方だと効かない
+      // if (event.key === key.value) {
+      if (key.isUp && key.press) key.press();
+      key.isDown = true;
+      key.isUp = false;
+    }
+    event.preventDefault();
+  };
+
+  //The `upHandler`
+  key.upHandler = (event: KeyboardEvent) => {
+    console.log("key.upHandler");
+    if (event.keyCode === key.code) {
+      // 非推奨だが、下の書き方だと効かない
+      // if (event.key === key.value) {
+      if (key.isDown && key.release) key.release();
+      key.isDown = false;
+      key.isUp = true;
+    }
+    event.preventDefault();
+  };
+  //Attach event listeners
+  window.addEventListener("keydown", key.downHandler.bind(key), false);
+  window.addEventListener("keyup", key.upHandler.bind(key), false);
+
+  // x
+  //window.addEventListener("keydown", key.downListener, false);
+  //window.addEventListener("keyup", key.upListener, false);
+
+  key.unsubscribe = () => {
+    window.removeEventListener("keydown", key.downListener.bind(key));
+    window.removeEventListener("keyup", key.upListener.bind(key));
+  };
+
+  //Return the `key` object
+  return key;
+};
+
+// key
+/*
+let keyObject = keyboard(asciiKeyCodeNumber);
+keyObject.press = () => {
+  //key object pressed
+  console.log("key object pressed");
+};
+keyObject.release = () => {
+  //key object released
+  console.log("key object released");
+};
+*/
+
+const left = keyboard(37),
+  up = keyboard(38),
+  right = keyboard(39),
+  down = keyboard(40);
+
+left.press = () => {
+  console.log("left.press");
+  //pixie.accelerationX = -pixie.speed;
+  //pixie.frictionX = 1;
+  explorer.x -= 10;
+};
+
+left.release = () => {
+  console.log("left.release");
+  //if (!right.isDown) {
+  //pixie.accelerationX = 0;
+  //pixie.frictionX = pixie.drag;
+  //}
+};
+//Up
+up.press = () => {
+  console.log("up.press");
+  explorer.y -= 10;
+  //pixie.accelerationY = -pixie.speed;
+  //pixie.frictionY = 1;
+};
+up.release = () => {
+  console.log("up.release");
+  //if (!down.isDown) {
+    //pixie.accelerationY = 0;
+    //pixie.frictionY = pixie.drag;
+  //}
+};
+//Right
+right.press = () => {
+  console.log("right.press");
+  explorer.x += 10;
+  //pixie.accelerationX = pixie.speed;
+  //pixie.frictionX = 1;
+};
+right.release = () => {
+  console.log("right.release");
+  if (!left.isDown) {
+    //pixie.accelerationX = 0;
+    //pixie.frictionX = pixie.drag;
+  }
+};
+//Down
+down.press = () => {
+  console.log("down.press");
+  explorer.y += 10;
+  //pixie.accelerationY = pixie.speed;
+  //pixie.frictionY = 1;
+};
+down.release = () => {
+  console.log("down.release");
+  if (!up.isDown) {
+    //pixie.accelerationY = 0;
+    //pixie.frictionY = pixie.drag;
+  }
+};
