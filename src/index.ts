@@ -5,6 +5,7 @@ import { WebpackPluginInstance as loader } from "webpack";
 import { STAGES, ASSETS, GAMES } from "./constants";
 import { setText } from "./helper/setText";
 import { randomInt } from "./helper/randomInt";
+import { keyboard } from "./helper/keyboard";
 import Stats from "stats.js";
 
 console.log(PIXI);
@@ -34,7 +35,7 @@ const stage: PIXI.Container = new PIXI.Container();
 let oldTime: number = Date.now();
 let ms: number = 1000;
 let fps: number = GAMES.FPS;
-let animate = () => {
+let animate: FrameRequestCallback = (): void => {
   // console.log("animate()");
   let newTime: number = Date.now();
   let deltaTime: number = newTime - oldTime;
@@ -80,7 +81,6 @@ stage.addChild(container);
 // container for add particle
 let container_effect: PIXI.Container = new PIXI.Container();
 
-let cat: PIXI.Sprite;
 let gameState: string = "init";
 let atras: PIXI.Sprite;
 let gameLoopFlag: boolean = false;
@@ -90,6 +90,11 @@ let dungeon: PIXI.Sprite;
 let door: PIXI.Sprite;
 let explorer: PIXI.Sprite;
 let treasure: PIXI.Sprite;
+
+// explorer 
+let explorer_vx: number = 0;
+let explorer_vy: number = 0;
+let explorer_speed: number = 3;
 
 // 体力バー用コンテナ
 let healthBar: PIXI.Container = new PIXI.Container();
@@ -139,12 +144,6 @@ loader.load((loader: PIXI.Loader, resources: any) => {
     bg = new PIXI.Sprite(resources.bg_data.texture);
     container.addChild(bg);
   }
-
-  // cat
-  cat = new PIXI.Sprite(resources.obj_1_data.texture);
-  container.addChild(cat);
-  cat.x = WIDTH / 2 - cat.width / 2;
-  cat.y = HEIGHT / 2 - cat.height / 2;
 
   // text
   let offset: number = 10;
@@ -202,7 +201,7 @@ loader.load((loader: PIXI.Loader, resources: any) => {
   text_fps.y = HEIGHT - text_fps.height - offset;
 
   // app start
-  // requestAnimationFrame(animate);
+  requestAnimationFrame(animate);
 
   gameSetup(resources);
 });
@@ -254,12 +253,16 @@ loader.onError.add(() => {
 // 各セクションがどのように機能するかを見ながら、これをゲームの世界地図として使用します。
 
 // function
-const gameLoop = (delta: number) => {
-  // console.log("gameLoop()", delta);
+const gameLoop: Function = (delta: number): void => {
+  console.log("gameLoop()", delta);
   // 現在のゲームの状態をループで実行し、スプライトをレンダリングします。
+
+  // Use the explorer's velocity to make it move
+  explorer.x += explorer_vx;
+  explorer.y += explorer_vy;
 };
 
-const gamePlay = () => {
+const gamePlay: Function = (): void => {
   console.log("gamePlay()");
   // すべてのゲームロジックはここにあります
 
@@ -273,7 +276,7 @@ const gamePlay = () => {
   //}
 };
 
-const gameEnd = () => {
+const gameEnd: Function = (): void => {
   console.log("gameEnd()");
   // ゲーム終了時に実F行されるべきすべてのコードがあります。
 };
@@ -287,7 +290,7 @@ const gameEnd = () => {
 // 最後の2行のコード、state = play。 そしてgameLoop()がおそらく最も重要です。
 // PixiのティッカーにgameLoop()を追加すると、ゲームのエンジンがオンになり、play()関数が連続ループで呼び出されます。
 // しかし、それがどのように機能するのかを見る前に、setup()関数内の特定のコードが何をするのか見てみましょう。
-const gameSetup = (resources: any) => {
+const gameSetup: Function = (resources: any): void => {
   console.log("gameSetup()");
   // ゲームスプライトを初期化し、ゲームの `state`を` play`に設定して 'gameLoop'を起動します
 
@@ -318,6 +321,7 @@ const gameSetup = (resources: any) => {
 
   let gameOverScene: PIXI.Container = new PIXI.Container();
   container.addChild(gameOverScene);
+  gameOverScene.visible = false;
   gameScene.x = 0;
   gameScene.y = 0;
 
@@ -347,29 +351,31 @@ const gameSetup = (resources: any) => {
 
   // ダンジョン
   dungeon = new PIXI.Sprite(id["dungeon.png"]);
-  dungeon.x = 400;
-  dungeon.y = 200;
+  dungeon.x = 0;
+  dungeon.y = 0;
   gameScene.addChild(dungeon);
 
   // ドア
   door = new PIXI.Sprite(id["door.png"]);
-  door.position.set(500, 10);
+  door.position.set(480, 30);
   gameScene.addChild(door);
 
   // プレイヤー（探検家）
   explorer = new PIXI.Sprite(id["explorer.png"]);
-  explorer.x = 500;
+  explorer.x = 250;
   explorer.y = 50;
   // explorer.y = gameScene.height / 2 - explorer.height / 2;
   // explorer.vx = 0; //errなのでオブジェクトで持たせとく？
   // explorer.vy = 0;
+  explorer_vx = 0;
+  explorer_vy = 0;
   gameScene.addChild(explorer);
 
   // 宝箱
   treasure = new PIXI.Sprite(id["treasure.png"]);
   // treasure.x = gameScene.width - treasure.width - 48;
   // treasure.y = gameScene.height / 2 - treasure.height / 2;
-  treasure.x = 500;
+  treasure.x = 250;
   treasure.y = 90;
   gameScene.addChild(treasure);
 
@@ -477,8 +483,8 @@ const gameSetup = (resources: any) => {
   let message = new PIXI.Text("The End!", style);
   message.x = 120;
   message.y = 120;
-  // gameOverScene.addChild(message);
-  gameScene.addChild(message); // 位置確認用
+  gameOverScene.addChild(message);
+  // gameScene.addChild(message); // 位置確認用
 
   // ゲームのステートを`play`に設定する
   // state = play;
@@ -498,180 +504,63 @@ const gameSetup = (resources: any) => {
 //// ゲームのヘルパー関数 ////
 // →外部化
 
-/*
-const randomInt = (min: number, max: number) => {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-};
-*/
-
-// TODO: Move to helper/
-/*
-const keyboard = (value: number) => {
-  console.log("keyboard: ", value);
-  let key: any = {};
-  key.value = value;
-  key.isDown = false;
-  key.isUp = true;
-  key.press = undefined;
-  key.release = undefined;
-  //The `downHandler`
-  key.downHandler = (event: KeyboardEvent) => {
-    if (event.key === key.value) {
-      if (key.isUp && key.press) key.press();
-      key.isDown = true;
-      key.isUp = false;
-      event.preventDefault();
-    }
-  };
-
-  //The `upHandler`
-  key.upHandler = (event: KeyboardEvent) => {
-    if (event.key === key.value) {
-      if (key.isDown && key.release) key.release();
-      key.isDown = false;
-      key.isUp = true;
-      event.preventDefault();
-    }
-  };
-
-  //Attach event listeners
-  const downListener = key.downHandler.bind(key);
-  const upListener = key.upHandler.bind(key);
-
-  window.addEventListener("keydown", downListener, false);
-  window.addEventListener("keyup", upListener, false);
-
-  // Detach event listeners
-  key.unsubscribe = () => {
-    window.removeEventListener("keydown", downListener);
-    window.removeEventListener("keyup", upListener);
-  };
-
-  return key;
-};
-*/
-
-const keyboard = (keyCode: number) => {
-  console.log("keyboard()");
-  let key: any = {};
-  key.code = keyCode;
-  key.isDown = false;
-  key.isUp = true;
-  key.press = undefined;
-  key.release = undefined;
-  //The `downHandler`
-  key.downHandler = (event: KeyboardEvent) => {
-    console.log("key.downHandler");
-    if (event.keyCode === key.code) {
-      // 非推奨だが、下の書き方だと効かない
-      // if (event.key === key.value) {
-      if (key.isUp && key.press) key.press();
-      key.isDown = true;
-      key.isUp = false;
-    }
-    event.preventDefault();
-  };
-
-  //The `upHandler`
-  key.upHandler = (event: KeyboardEvent) => {
-    console.log("key.upHandler");
-    if (event.keyCode === key.code) {
-      // 非推奨だが、下の書き方だと効かない
-      // if (event.key === key.value) {
-      if (key.isDown && key.release) key.release();
-      key.isDown = false;
-      key.isUp = true;
-    }
-    event.preventDefault();
-  };
-  //Attach event listeners
-  window.addEventListener("keydown", key.downHandler.bind(key), false);
-  window.addEventListener("keyup", key.upHandler.bind(key), false);
-
-  // x
-  //window.addEventListener("keydown", key.downListener, false);
-  //window.addEventListener("keyup", key.upListener, false);
-
-  key.unsubscribe = () => {
-    window.removeEventListener("keydown", key.downListener.bind(key));
-    window.removeEventListener("keyup", key.upListener.bind(key));
-  };
-
-  //Return the `key` object
-  return key;
-};
-
-// key
-/*
-let keyObject = keyboard(asciiKeyCodeNumber);
-keyObject.press = () => {
-  //key object pressed
-  console.log("key object pressed");
-};
-keyObject.release = () => {
-  //key object released
-  console.log("key object released");
-};
-*/
-
+// Subscribe Cursor Key
 const left = keyboard(37),
   up = keyboard(38),
   right = keyboard(39),
   down = keyboard(40);
 
+// Left Cursor Key
 left.press = () => {
   console.log("left.press");
-  //pixie.accelerationX = -pixie.speed;
-  //pixie.frictionX = 1;
-  explorer.x -= 10;
+  explorer_vx = -explorer_speed;
+  explorer_vy = 0;
 };
-
 left.release = () => {
   console.log("left.release");
-  //if (!right.isDown) {
-  //pixie.accelerationX = 0;
-  //pixie.frictionX = pixie.drag;
-  //}
+  if (!right.isDown && explorer_vy === 0) {
+    // この判別入れると逆キー押した場合は離したキーよりそちらが優先される（一旦停止しない、滑らかに動く）
+    explorer_vx = 0;
+  }
+  // keyboard(37).unsubscribe(); // ok
 };
-//Up
+
+// Up Cursor Key
 up.press = () => {
   console.log("up.press");
-  explorer.y -= 10;
-  //pixie.accelerationY = -pixie.speed;
-  //pixie.frictionY = 1;
+  explorer_vx = 0;
+  explorer_vy = -explorer_speed;
+
 };
 up.release = () => {
   console.log("up.release");
-  //if (!down.isDown) {
-    //pixie.accelerationY = 0;
-    //pixie.frictionY = pixie.drag;
-  //}
+  if (!down.isDown && explorer_vx === 0) {
+    explorer_vy = 0;
+  }
 };
-//Right
+
+// Right Cursor Key
 right.press = () => {
   console.log("right.press");
-  explorer.x += 10;
-  //pixie.accelerationX = pixie.speed;
-  //pixie.frictionX = 1;
+  explorer_vx = explorer_speed;
+  explorer_vy = 0;
 };
 right.release = () => {
   console.log("right.release");
-  if (!left.isDown) {
-    //pixie.accelerationX = 0;
-    //pixie.frictionX = pixie.drag;
+  if (!left.isDown && explorer_vy === 0) {
+    explorer_vx = 0;
   }
 };
-//Down
+
+// Down Cursor Key
 down.press = () => {
   console.log("down.press");
-  explorer.y += 10;
-  //pixie.accelerationY = pixie.speed;
-  //pixie.frictionY = 1;
+  explorer_vx = 0;
+  explorer_vy = explorer_speed;
 };
 down.release = () => {
   console.log("down.release");
-  if (!up.isDown) {
-    //pixie.accelerationY = 0;
-    //pixie.frictionY = pixie.drag;
+  if (!up.isDown && explorer_vx === 0) {
+    explorer_vy = 0;
   }
 };
