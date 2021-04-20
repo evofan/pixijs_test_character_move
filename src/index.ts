@@ -6,6 +6,7 @@ import { STAGES, ASSETS, GAMES } from "./constants";
 import { setText } from "./helper/setText";
 import { randomInt } from "./helper/randomInt";
 import { keyboard } from "./helper/keyboard";
+import { contain } from "./helper/contain";
 import Stats from "stats.js";
 
 console.log(PIXI);
@@ -91,7 +92,7 @@ let door: PIXI.Sprite;
 let explorer: PIXI.Sprite;
 let treasure: PIXI.Sprite;
 
-// explorer 
+// explorer
 let explorer_vx: number = 0;
 let explorer_vy: number = 0;
 let explorer_speed: number = 3;
@@ -253,16 +254,19 @@ loader.onError.add(() => {
 // 各セクションがどのように機能するかを見ながら、これをゲームの世界地図として使用します。
 
 // function
-const gameLoop: Function = (delta: number): void => {
+const gameLoop = (delta: number): void => {
   console.log("gameLoop()", delta);
   // 現在のゲームの状態をループで実行し、スプライトをレンダリングします。
 
   // Use the explorer's velocity to make it move
   explorer.x += explorer_vx;
   explorer.y += explorer_vy;
+
+  // Contain the explorer inside the area of the dungeon
+  contain(explorer, { x: 28, y: 10, width: 488, height: 480 });
 };
 
-const gamePlay: Function = (): void => {
+const gamePlay = (): void => {
   console.log("gamePlay()");
   // すべてのゲームロジックはここにあります
 
@@ -276,7 +280,7 @@ const gamePlay: Function = (): void => {
   //}
 };
 
-const gameEnd: Function = (): void => {
+const gameEnd = (): void => {
   console.log("gameEnd()");
   // ゲーム終了時に実F行されるべきすべてのコードがあります。
 };
@@ -290,7 +294,7 @@ const gameEnd: Function = (): void => {
 // 最後の2行のコード、state = play。 そしてgameLoop()がおそらく最も重要です。
 // PixiのティッカーにgameLoop()を追加すると、ゲームのエンジンがオンになり、play()関数が連続ループで呼び出されます。
 // しかし、それがどのように機能するのかを見る前に、setup()関数内の特定のコードが何をするのか見てみましょう。
-const gameSetup: Function = (resources: any): void => {
+const gameSetup = (resources: any): void => {
   console.log("gameSetup()");
   // ゲームスプライトを初期化し、ゲームの `state`を` play`に設定して 'gameLoop'を起動します
 
@@ -530,7 +534,6 @@ up.press = () => {
   console.log("up.press");
   explorer_vx = 0;
   explorer_vy = -explorer_speed;
-
 };
 up.release = () => {
   console.log("up.release");
