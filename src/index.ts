@@ -59,10 +59,11 @@ let loader: PIXI.Loader = new PIXI.Loader();
 
 // asset
 const ASSET_BG: string = ASSETS.ASSET_BG;
-const ASSET_OBJ1: string = ASSETS.ASSET_OBJ1;
+// const ASSET_OBJ1: string = ASSETS.ASSET_OBJ1;
 const ASSET_OBJ2: string = ASSETS.ASSET_OBJ2;
 const ASSET_OBJ3: string = ASSETS.ASSET_OBJ3;
-// const ASSET_OBJ4: string = ASSETS.ASSET_OBJ4;
+const ASSET_OBJ4: string = ASSETS.ASSET_OBJ4;
+const ASSET_OBJ5: string = ASSETS.ASSET_OBJ5;
 
 // init
 let bg: PIXI.Sprite;
@@ -115,6 +116,16 @@ let healthBar: PIXI.Container = new PIXI.Container();
 let innerBar: PIXI.Graphics = new PIXI.Graphics();
 let outerBar = new PIXI.Graphics();
 
+// arrow
+let arrow_white_left: PIXI.Sprite,
+  arrow_white_up: PIXI.Sprite,
+  arrow_white_right: PIXI.Sprite,
+  arrow_white_down: PIXI.Sprite,
+  arrow_red_left: PIXI.Sprite,
+  arrow_red_up: PIXI.Sprite,
+  arrow_red_right: PIXI.Sprite,
+  arrow_red_down: PIXI.Sprite;
+
 // text
 let text_libVersion: PIXI.Text,
   text_description: PIXI.Text,
@@ -126,10 +137,12 @@ if (ASSET_BG === "") {
 } else {
   loader.add("bg_data", ASSET_BG);
 }
-loader.add("obj_1_data", ASSET_OBJ1);
+// loader.add("obj_1_data", ASSET_OBJ1);
 // loader.add("obj_2_data", ASSET_OBJ2); //   loader.add("images/atras.json").load(setup);
 loader.add("obj_3_data", ASSET_OBJ3);
-// loader.add("obj_4_data", ASSET_OBJ4);
+
+loader.add("obj_4_data", ASSET_OBJ4);
+loader.add("obj_5_data", ASSET_OBJ5);
 
 // Text loading
 let text_loading: PIXI.Text;
@@ -326,24 +339,19 @@ const gameLoop = (delta: number): void => {
 
   // ブロブのvy（vertical velocity：垂直速度）値に-1を掛けると、その移動方向が反転します。
 
-
-  
   // hitTestRectangle()がtrueを返す場合、それは衝突があったことを意味し、explorerHitという変数がtrueに設定されます。
   // explorerHitがtrueの場合、play()関数は探検家を半透明にし、体力バーの幅を1ピクセル縮小します。
-  
-  if(explorerHit) {
 
+  if (explorerHit) {
     // 冒険家を半透明にする
     explorer.alpha = 0.5;
 
     // 体力バーの内側の長方形の幅を1ピクセル減らす
     outerBar.width -= 1;
-    if(outerBar.width<0){
+    if (outerBar.width < 0) {
       outerBar.width = 0;
     }
-
   } else {
-
     // ヒットしていない場合は、冒険家を完全に不透明'Opaque'（不透明'non-transparent'）にします。
     explorer.alpha = 1;
   }
@@ -357,7 +365,6 @@ const gameLoop = (delta: number): void => {
   // これを行うコードは次のとおりです。
   // Check for a collision between the explorer and the treasure
   if (hitTestRectangle(explorer, treasure)) {
-
     // If the treasure is touching the explorer, center it over the explorer
     treasure.x = explorer.x + 8;
     treasure.y = explorer.y + 8;
@@ -375,8 +382,7 @@ const gameLoop = (delta: number): void => {
   if (hitTestRectangle(treasure, door)) {
     gameState = "end";
     //message.text = "You won!";
-  } 
-
+  }
 };
 
 const gamePlay = (): void => {
@@ -495,6 +501,62 @@ const gameSetup = (resources: any): void => {
   // それら（ダンジョン、ドア、プレイヤー、宝箱）をgameSceneグループにまとめておくと、ゲームが終了したときにgameSceneを非表示にして
   // gameOverSceneを表示するのが簡単になります。
   //（※シーン切り替えをスマートにする考え方）
+
+  // navigation arrow
+  // left
+  arrow_white_left = new PIXI.Sprite(resources.obj_4_data.texture);
+  arrow_white_left.scale.x = arrow_white_left.scale.y = 0.5;
+  arrow_white_left.angle = 180;
+  arrow_white_left.x = 408;
+  arrow_white_left.y = 460;
+  container.addChild(arrow_white_left);
+  arrow_red_left = new PIXI.Sprite(resources.obj_5_data.texture);
+  arrow_red_left.scale.x = arrow_red_left.scale.y = 0.5;
+  arrow_red_left.angle = 180;
+  arrow_red_left.x = 408;
+  arrow_red_left.y = 460;
+  arrow_red_left.visible = false;
+  container.addChild(arrow_red_left);
+  // up
+  arrow_white_up = new PIXI.Sprite(resources.obj_4_data.texture);
+  arrow_white_up.scale.x = arrow_white_up.scale.y = 0.5;
+  arrow_white_up.angle = -90;
+  arrow_white_up.x = 410;
+  arrow_white_up.y = 420;
+  container.addChild(arrow_white_up);
+  arrow_red_up = new PIXI.Sprite(resources.obj_5_data.texture);
+  arrow_red_up.scale.x = arrow_red_up.scale.y = 0.5;
+  arrow_red_up.angle = -90;
+  arrow_red_up.x = 410;
+  arrow_red_up.y = 420;
+  arrow_red_up.visible = false;
+  container.addChild(arrow_red_up);
+  // right
+  arrow_white_right = new PIXI.Sprite(resources.obj_4_data.texture);
+  arrow_white_right.scale.x = arrow_white_right.scale.y = 0.5;
+  arrow_white_right.x = 450;
+  arrow_white_right.y = 420;
+  container.addChild(arrow_white_right);
+  arrow_red_right = new PIXI.Sprite(resources.obj_5_data.texture);
+  arrow_red_right.scale.x = arrow_red_right.scale.y = 0.5;
+  arrow_red_right.x = 450;
+  arrow_red_right.y = 420;
+  arrow_red_right.visible = false;
+  container.addChild(arrow_red_right);
+  // down
+  arrow_white_down = new PIXI.Sprite(resources.obj_4_data.texture);
+  arrow_white_down.scale.x = arrow_white_down.scale.y = 0.5;
+  arrow_white_down.angle = 90;
+  arrow_white_down.x = 450;
+  arrow_white_down.y = 460;
+  container.addChild(arrow_white_down);
+  arrow_red_down = new PIXI.Sprite(resources.obj_5_data.texture);
+  arrow_red_down.scale.x = arrow_red_down.scale.y = 0.5;
+  arrow_red_down.angle = 90;
+  arrow_red_down.x = 450;
+  arrow_red_down.y = 460;
+  arrow_red_down.visible = false;
+  container.addChild(arrow_red_down);
 
   // ■3.モンスターの作成
 
@@ -617,11 +679,15 @@ left.press = () => {
   console.log("left.press");
   explorer_vx = -explorer_speed;
   explorer_vy = 0;
+  arrow_white_left.visible = false;
+  arrow_red_left.visible = true;
 };
 left.release = () => {
   console.log("left.release");
+  arrow_white_left.visible = true;
+  arrow_red_left.visible = false;
   if (!right.isDown && explorer_vy === 0) {
-    // この判別入れると逆キー押した場合は離したキーよりそちらが優先される（一旦停止しない、滑らかに動く）
+    // この判別入れると逆キー押した場合は離したキーよりそちらが優先される（一旦移動停止しない、滑らかに動く）
     explorer_vx = 0;
   }
   // keyboard(37).unsubscribe(); // ok
@@ -632,9 +698,13 @@ up.press = () => {
   console.log("up.press");
   explorer_vx = 0;
   explorer_vy = -explorer_speed;
+  arrow_white_up.visible = false;
+  arrow_red_up.visible = true;
 };
 up.release = () => {
   console.log("up.release");
+  arrow_white_up.visible = true;
+  arrow_red_up.visible = false;
   if (!down.isDown && explorer_vx === 0) {
     explorer_vy = 0;
   }
@@ -645,9 +715,13 @@ right.press = () => {
   console.log("right.press");
   explorer_vx = explorer_speed;
   explorer_vy = 0;
+  arrow_white_right.visible = false;
+  arrow_red_right.visible = true;
 };
 right.release = () => {
   console.log("right.release");
+  arrow_white_right.visible = true;
+  arrow_red_right.visible = false;
   if (!left.isDown && explorer_vy === 0) {
     explorer_vx = 0;
   }
@@ -658,9 +732,13 @@ down.press = () => {
   console.log("down.press");
   explorer_vx = 0;
   explorer_vy = explorer_speed;
+  arrow_white_down.visible = false;
+  arrow_red_down.visible = true;
 };
 down.release = () => {
   console.log("down.release");
+  arrow_white_down.visible = true;
+  arrow_red_down.visible = false;
   if (!up.isDown && explorer_vx === 0) {
     explorer_vy = 0;
   }

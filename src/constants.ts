@@ -19,8 +19,8 @@ export const ASSETS: {
   ASSET_OBJ1: "assets/images/cat.png",
   ASSET_OBJ2: "assets/images/atras.json",
   ASSET_OBJ3: "assets/images/treasureHunter.json",
-  ASSET_OBJ4: "assets/images/pic_spark4.png",
-  ASSET_OBJ5: "assets/images/pic_spark4.png",
+  ASSET_OBJ4: "assets/images/pic_arrow_white.png",
+  ASSET_OBJ5: "assets/images/pic_arrow_red.png",
   ASSET_OBJ6: "assets/images/pic_spark4.png"
   // TODO: load manifest file
 };
