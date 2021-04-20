@@ -7,6 +7,7 @@ import { setText } from "./helper/setText";
 import { randomInt } from "./helper/randomInt";
 import { keyboard } from "./helper/keyboard";
 import { contain } from "./helper/contain";
+import { hitTestRectangle } from "./helper/hitTestRectangle";
 import Stats from "stats.js";
 
 console.log(PIXI);
@@ -93,9 +94,18 @@ let explorer: PIXI.Sprite;
 let treasure: PIXI.Sprite;
 
 // explorer
-let explorer_vx: number = 0;
-let explorer_vy: number = 0;
-let explorer_speed: number = 3;
+let explorer_vx: number = 0,
+  explorer_vy: number = 0,
+  explorer_speed: number = 3;
+
+// blobs
+let numberOfBlobs: number = 6,
+  blobs: PIXI.Sprite[] = [],
+  blob_spacing: number = 48,
+  blob_xOffset: number = 150,
+  blob_speed: number = 2,
+  blob_direction: number = 1,
+  blob_vy: number[] = [];
 
 // 体力バー用コンテナ
 let healthBar: PIXI.Container = new PIXI.Container();
@@ -264,6 +274,54 @@ const gameLoop = (delta: number): void => {
 
   // Contain the explorer inside the area of the dungeon
   contain(explorer, { x: 28, y: 10, width: 488, height: 480 });
+
+  // Set `explorerHit` to `false` before checking for a collision
+  let explorerHit: boolean = false;
+
+  // play()関数はまた、ブロブモンスターを移動させ、それらをダンジョンの壁の中に閉じ込めたままにし、
+  // そしてそれぞれのプレイヤーとの衝突をチェックします。
+  // ブロブがダンジョンの上壁または下壁にぶつかると、方向が逆になります。
+  // これはすべて、毎フレームでBLOB配列内のBLOBスプライトのそれぞれを繰り返すforEach()ループを使用して行われます。
+
+  //blobs.forEach((blob, idx) => {
+  blobs.map((blob, idx) => {
+    // ブロブを移動する
+    blob.y += blob_vy[idx];
+
+    // BLOBのスクリーン上の境界をチェックする
+    let blobHitsWall = contain(blob, { x: 28, y: 10, width: 488, height: 480 });
+
+    // ブロブがステージの上または下に当たった場合は、方向を逆にします
+    if (blobHitsWall === "top" || blobHitsWall === "bottom") {
+      blob_vy[idx] *= -1;
+    }
+
+    // 衝突をテストします。 いずれかの敵が探検家に触れている場合は、`explorerHit`を` true`に設定します。
+    if (hitTestRectangle(explorer, blob)) {
+      explorerHit = true;
+    }
+  });
+
+  //  このコードでは、contain()関数の戻り値を使用してBLOBを壁から反射させる方法がわかります。
+  // 戻り値を取得するためにblobHitsWallという変数が使用されます。
+
+  // let blobHitsWall = contain(blob, { x: 28, y: 10, width: 488, height: 480 });
+
+  // blobHitsWallは通常undefinedです。
+  // しかし、ブロブが上の壁に当たった場合、blobHitsWallの値は"top"になります。
+  // ブロブが底壁に当たった場合、blobHitsWallは "bottom"という値になります。
+  // これらのケースのいずれかが当てはまる場合は、速度を逆にすることでブロブの方向を逆にすることができます。
+  // これを行うコードは次のとおりです。
+
+  /*
+  if (blobHitsWall === "top" || blobHitsWall === "bottom") {
+    blob.vy *= -1;
+  }
+  */
+
+  // ブロブのvy（vertical velocity：垂直速度）値に-1を掛けると、その移動方向が反転します。
+
+
 };
 
 const gamePlay = (): void => {
@@ -361,26 +419,21 @@ const gameSetup = (resources: any): void => {
 
   // ドア
   door = new PIXI.Sprite(id["door.png"]);
-  door.position.set(480, 30);
+  door.position.set(32, 0);
   gameScene.addChild(door);
 
   // プレイヤー（探検家）
   explorer = new PIXI.Sprite(id["explorer.png"]);
-  explorer.x = 250;
-  explorer.y = 50;
-  // explorer.y = gameScene.height / 2 - explorer.height / 2;
-  // explorer.vx = 0; //errなのでオブジェクトで持たせとく？
-  // explorer.vy = 0;
+  explorer.x = 68;
+  explorer.y = gameScene.height / 2 - explorer.height / 2;
   explorer_vx = 0;
   explorer_vy = 0;
   gameScene.addChild(explorer);
 
   // 宝箱
   treasure = new PIXI.Sprite(id["treasure.png"]);
-  // treasure.x = gameScene.width - treasure.width - 48;
-  // treasure.y = gameScene.height / 2 - treasure.height / 2;
-  treasure.x = 250;
-  treasure.y = 90;
+  treasure.x = gameScene.width - treasure.width - 48;
+  treasure.y = gameScene.height / 2 - treasure.height / 2;
   gameScene.addChild(treasure);
 
   // それら（ダンジョン、ドア、プレイヤー、宝箱）をgameSceneグループにまとめておくと、ゲームが終了したときにgameSceneを非表示にして
@@ -395,22 +448,13 @@ const gameSetup = (resources: any): void => {
   // そのため、各ブロブは隣の方向とは反対方向に移動します。
   // 作成されたそれぞれのブロブモンスターは、blobsと呼ばれる配列にプッシュ（で格納）されます。
 
-  let numberOfBlobs: number = 6,
-    spacing: number = 48,
-    xOffset: number = 150,
-    speed: number = 2,
-    direction: number = 1;
-
-  // すべてのブロブモンスターを格納するための配列
-  let blobs: PIXI.Sprite[] = [];
-
   // `numberOfBlobs`と同数のブロブを作成します
   for (let i: number = 0; i < numberOfBlobs; i++) {
     // ブロブを作成する
     let blob: PIXI.Sprite = new PIXI.Sprite(id["blob.png"]); // `xOffset`は最初のブロブが追加されるべき画面の左からの位置を決定します
 
     // `spacing`の値に従って各ブロブを水平方向に間隔を空けます。
-    let x: number = spacing * i + xOffset;
+    let x: number = blob_spacing * i + blob_xOffset;
 
     // ブロブにランダムな「y」位置を与える
     let y: number = randomInt(0, stage.height - blob.height);
@@ -424,10 +468,10 @@ const gameSetup = (resources: any): void => {
     // 「1」は敵が下に移動することを意味し、「-1」はブロブが上に移動することを意味します。
     //　`direction`を` speed`で乗算すると、ブロブの垂直方向が決まります。
     // blob.vy = speed * direction;
-    let blob_vy: number = speed * direction; // ★後で動かすのでglobalに保存しておく
+    blob_vy[i] = blob_speed * blob_direction; // ★後で動かすのでglobalに保存しておく
 
     // 次のブロブの方向を逆にする
-    direction *= -1;
+    blob_direction *= -1;
 
     // ブロブを`blobs`配列にプッシュ（追加）します
     blobs.push(blob);
@@ -445,7 +489,7 @@ const gameSetup = (resources: any): void => {
 
   // 体力バーを作成する
   // healthBar = new PIXI.Container();
-  healthBar.position.set(570, 4);
+  healthBar.position.set(WIDTH - 170, 4);
   // healthBar.x = stage.width - 170;
   // healthBar.y = 4;
   gameScene.addChild(healthBar);

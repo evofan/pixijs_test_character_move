@@ -6,7 +6,7 @@ import * as PIXI from "pixi.js";
  * @param r2 Sptite2
  * @returns isHit true or false
  */
-function hitTestRectangle(r1: PIXI.Sprite, r2: PIXI.Sprite) {
+export const hitTestRectangle = (r1: PIXI.Sprite, r2: PIXI.Sprite) => {
   // Define the variables we'll need to calculate、計算する必要のある変数を定義
   let hit: boolean,
     combinedHalfWidths: number,
@@ -54,4 +54,4 @@ function hitTestRectangle(r1: PIXI.Sprite, r2: PIXI.Sprite) {
 
   // `hit` will be either `true` or `false`、`hit`は` true`または `false`のいずれかになる
   return hit;
-}
+};
