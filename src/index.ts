@@ -87,6 +87,9 @@ let gameState: string = "init";
 let atras: PIXI.Sprite;
 let gameLoopFlag: boolean = false;
 
+let gameScene: PIXI.Container = new PIXI.Container();
+let gameOverScene: PIXI.Container = new PIXI.Container();
+
 // game sprite
 let dungeon: PIXI.Sprite;
 let door: PIXI.Sprite;
@@ -109,6 +112,8 @@ let numberOfBlobs: number = 6,
 
 // 体力バー用コンテナ
 let healthBar: PIXI.Container = new PIXI.Container();
+let innerBar: PIXI.Graphics = new PIXI.Graphics();
+let outerBar = new PIXI.Graphics();
 
 // text
 let text_libVersion: PIXI.Text,
@@ -212,7 +217,7 @@ loader.load((loader: PIXI.Loader, resources: any) => {
   text_fps.y = HEIGHT - text_fps.height - offset;
 
   // app start
-  requestAnimationFrame(animate);
+  // requestAnimationFrame(animate);
 
   gameSetup(resources);
 });
@@ -322,6 +327,56 @@ const gameLoop = (delta: number): void => {
   // ブロブのvy（vertical velocity：垂直速度）値に-1を掛けると、その移動方向が反転します。
 
 
+  
+  // hitTestRectangle()がtrueを返す場合、それは衝突があったことを意味し、explorerHitという変数がtrueに設定されます。
+  // explorerHitがtrueの場合、play()関数は探検家を半透明にし、体力バーの幅を1ピクセル縮小します。
+  
+  if(explorerHit) {
+
+    // 冒険家を半透明にする
+    explorer.alpha = 0.5;
+
+    // 体力バーの内側の長方形の幅を1ピクセル減らす
+    outerBar.width -= 1;
+    if(outerBar.width<0){
+      outerBar.width = 0;
+    }
+
+  } else {
+
+    // ヒットしていない場合は、冒険家を完全に不透明'Opaque'（不透明'non-transparent'）にします。
+    explorer.alpha = 1;
+  }
+
+  // explorerHitがfalseの場合、冒険家のalphaプロパティは1に維持され、完全に不透明（のまま）になります。
+
+  // play()関数はまた宝箱と探検家間の衝突をチェックします。
+  // ヒットした場合、宝物はわずかにオフセットされた状態で探索者探検家の位置に設定されます。
+  // これはそれが探検家が宝物を運んでいるように見えます。
+
+  // これを行うコードは次のとおりです。
+  // Check for a collision between the explorer and the treasure
+  if (hitTestRectangle(explorer, treasure)) {
+
+    // If the treasure is touching the explorer, center it over the explorer
+    treasure.x = explorer.x + 8;
+    treasure.y = explorer.y + 8;
+  }
+
+  // Does the explorer have enough health? If the width of the `innerBar`
+  // is less than zero, end the game and display "You lost!"
+  if (outerBar.width < 0) {
+    gameState = "end";
+    //message.text = "You lost!";
+  }
+
+  //If the explorer has brought the treasure to the exit,
+  //end the game and display "You won!"
+  if (hitTestRectangle(treasure, door)) {
+    gameState = "end";
+    //message.text = "You won!";
+  } 
+
 };
 
 const gamePlay = (): void => {
@@ -341,6 +396,8 @@ const gamePlay = (): void => {
 const gameEnd = (): void => {
   console.log("gameEnd()");
   // ゲーム終了時に実F行されるべきすべてのコードがあります。
+  gameScene.visible = false;
+  gameOverScene.visible = true;
 };
 
 // テクスチャアトラス画像がロードされるとすぐに、setup()関数が実行されます。
@@ -378,10 +435,9 @@ const gameSetup = (resources: any): void => {
 
   // setup()関数は、gameSceneとgameOverSceneという2つのコンテナグループを作成します。
   // これらのそれぞれがステージに追加されます。
-  let gameScene: PIXI.Container = new PIXI.Container();
+
   container.addChild(gameScene);
 
-  let gameOverScene: PIXI.Container = new PIXI.Container();
   container.addChild(gameOverScene);
   gameOverScene.visible = false;
   gameScene.x = 0;
@@ -495,14 +551,12 @@ const gameSetup = (resources: any): void => {
   gameScene.addChild(healthBar);
 
   // 黒い背景の四角形を作成する
-  let innerBar: PIXI.Graphics = new PIXI.Graphics();
   innerBar.beginFill(0x000000);
   innerBar.drawRect(0, 0, 128, 8);
   innerBar.endFill();
   healthBar.addChild(innerBar);
 
   // 前面の赤い長方形を作成する
-  let outerBar = new PIXI.Graphics();
   outerBar.beginFill(0xff3300);
   outerBar.drawRect(0, 0, 128, 8);
   outerBar.endFill();
