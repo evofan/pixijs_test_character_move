@@ -65,6 +65,8 @@ const ASSET_OBJ2: string = ASSETS.ASSET_OBJ2;
 const ASSET_OBJ3: string = ASSETS.ASSET_OBJ3;
 const ASSET_OBJ4: string = ASSETS.ASSET_OBJ4;
 const ASSET_OBJ5: string = ASSETS.ASSET_OBJ5;
+const ASSET_OBJ6: string = ASSETS.ASSET_OBJ6;
+const ASSET_OBJ7: string = ASSETS.ASSET_OBJ7;
 
 // init
 let bg: PIXI.Sprite;
@@ -91,6 +93,7 @@ let gameLoopFlag: boolean = false;
 
 let gameScene: PIXI.Container = new PIXI.Container();
 let gameOverScene: PIXI.Container = new PIXI.Container();
+let gameClearScene: PIXI.Container = new PIXI.Container();
 
 // game sprite
 let dungeon: PIXI.Sprite;
@@ -127,6 +130,10 @@ let arrow_white_left: PIXI.Sprite,
   arrow_red_right: PIXI.Sprite,
   arrow_red_down: PIXI.Sprite;
 
+// Souned Effect
+let se1: Howl;
+let se1Flag: boolean = true;
+
 // text
 let text_libVersion: PIXI.Text,
   text_description: PIXI.Text,
@@ -144,6 +151,9 @@ loader.add("obj_3_data", ASSET_OBJ3);
 
 loader.add("obj_4_data", ASSET_OBJ4);
 loader.add("obj_5_data", ASSET_OBJ5);
+
+loader.add("obj_6_data", ASSET_OBJ6);
+loader.add("obj_7_data", ASSET_OBJ7);
 
 // Text loading
 let text_loading: PIXI.Text;
@@ -174,61 +184,6 @@ loader.load((loader: PIXI.Loader, resources: any) => {
     bg = new PIXI.Sprite(resources.bg_data.texture);
     container.addChild(bg);
   }
-
-  // text
-  let offset: number = 10;
-
-  // text version
-  // let version: string = "PixiJS: 5.3.3\nwebpack: 4.44.0\nTypeScript: 4.0.2";
-  let version: string = `PixiJS: ver.${PIXI.VERSION}`;
-  text_libVersion = setText(version, "Arial", 16, 0xf0fff0, "left", "normal");
-  container.addChild(text_libVersion);
-  text_libVersion.x = offset;
-  text_libVersion.y = offset;
-
-  // text description
-  let description: string = "Character Move Test";
-  text_description = setText(
-    description,
-    "Arial",
-    24,
-    0xffd700,
-    "center",
-    "bold",
-    "#000000",
-    4,
-    false,
-    "#666666",
-    "round"
-  );
-  container.addChild(text_description);
-  text_description.x = WIDTH / 2 - text_description.width / 2;
-  text_description.y = offset;
-
-  // text message
-  let message: string = "Use cursor key";
-  text_message = setText(
-    message,
-    "Arial",
-    24,
-    0xff0033,
-    "center",
-    "bold",
-    "#000000",
-    5,
-    false,
-    "#666666",
-    "round"
-  );
-  container.addChild(text_message);
-  text_message.x = WIDTH / 2 - text_message.width / 2;
-  text_message.y = HEIGHT - text_message.height - offset;
-
-  // text fps
-  text_fps = setText(`FPS: ${fps}`, "Impact", 16, 0xf0fff0, "left", "normal");
-  container.addChild(text_fps);
-  text_fps.x = offset;
-  text_fps.y = HEIGHT - text_fps.height - offset;
 
   // app start
   // requestAnimationFrame(animate);
@@ -284,7 +239,7 @@ loader.onError.add(() => {
 
 // function
 const gameLoop = (delta: number): void => {
-  console.log("gameLoop()", delta);
+  // console.log("gameLoop()", delta);
   // 現在のゲームの状態をループで実行し、スプライトをレンダリングします。
 
   // Use the explorer's velocity to make it move
@@ -347,6 +302,16 @@ const gameLoop = (delta: number): void => {
     // 冒険家を半透明にする
     explorer.alpha = 0.5;
 
+    // 効果音
+    /*
+    if(se1Flag){
+      se1Flag = false;
+      se1.play();
+    }
+    */
+    se1.stop();
+    se1.play(); // 開始後に少し空白があるのでトル
+
     // 体力バーの内側の長方形の幅を1ピクセル減らす
     outerBar.width -= 1;
     if (outerBar.width < 0) {
@@ -373,8 +338,9 @@ const gameLoop = (delta: number): void => {
 
   // Does the explorer have enough health? If the width of the `innerBar`
   // is less than zero, end the game and display "You lost!"
-  if (outerBar.width < 0) {
+  if (outerBar.width <= 0) {
     gameState = "end";
+    gameOver();
     //message.text = "You lost!";
   }
 
@@ -383,6 +349,7 @@ const gameLoop = (delta: number): void => {
   if (hitTestRectangle(treasure, door)) {
     gameState = "end";
     //message.text = "You won!";
+    gameEnd();
   }
 };
 
@@ -404,7 +371,16 @@ const gameEnd = (): void => {
   console.log("gameEnd()");
   // ゲーム終了時に実F行されるべきすべてのコードがあります。
   gameScene.visible = false;
+  gameOverScene.visible = false;
+  gameClearScene.visible = true;
+};
+
+const gameOver = (): void => {
+  console.log("gameOver()");
+  // ゲーム終了時に実F行されるべきすべてのコードがあります。
+  gameScene.visible = false;
   gameOverScene.visible = true;
+  gameClearScene.visible = false;
 };
 
 // テクスチャアトラス画像がロードされるとすぐに、setup()関数が実行されます。
@@ -444,11 +420,14 @@ const gameSetup = (resources: any): void => {
   // これらのそれぞれがステージに追加されます。
 
   container.addChild(gameScene);
+  gameScene.x = 0;
+  gameScene.y = 0;
 
   container.addChild(gameOverScene);
   gameOverScene.visible = false;
-  gameScene.x = 0;
-  gameScene.y = 0;
+
+  container.addChild(gameClearScene);
+  gameClearScene.visible = false;
 
   // メインゲームの一部であるスプライトはすべてgameSceneグループに追加されます。
   // ゲーム終了時に表示されるべきゲームオーバーテキストは、gameOverSceneグループに追加されます。
@@ -502,6 +481,61 @@ const gameSetup = (resources: any): void => {
   // それら（ダンジョン、ドア、プレイヤー、宝箱）をgameSceneグループにまとめておくと、ゲームが終了したときにgameSceneを非表示にして
   // gameOverSceneを表示するのが簡単になります。
   //（※シーン切り替えをスマートにする考え方）
+
+  // text
+  let offset: number = 10;
+
+  // text version
+  // let version: string = "PixiJS: 5.3.3\nwebpack: 4.44.0\nTypeScript: 4.0.2";
+  let version: string = `PixiJS: ver.${PIXI.VERSION}`;
+  text_libVersion = setText(version, "Arial", 16, 0xf0fff0, "left", "normal");
+  container.addChild(text_libVersion);
+  text_libVersion.x = offset;
+  text_libVersion.y = offset;
+
+  // text description
+  let description: string = "Character Move Test";
+  text_description = setText(
+    description,
+    "Arial",
+    24,
+    0xffd700,
+    "center",
+    "bold",
+    "#000000",
+    4,
+    false,
+    "#666666",
+    "round"
+  );
+  container.addChild(text_description);
+  text_description.x = WIDTH / 2 - text_description.width / 2;
+  text_description.y = offset;
+
+  // text message
+  let message_navi: string = "Use cursor key";
+  text_message = setText(
+    message_navi,
+    "Arial",
+    24,
+    0xff0033,
+    "center",
+    "bold",
+    "#000000",
+    5,
+    false,
+    "#666666",
+    "round"
+  );
+  container.addChild(text_message);
+  text_message.x = WIDTH / 2 - text_message.width / 2;
+  text_message.y = HEIGHT - text_message.height - offset;
+
+  // text fps
+  text_fps = setText(`FPS: ${fps}`, "Impact", 16, 0xf0fff0, "left", "normal");
+  container.addChild(text_fps);
+  text_fps.x = offset;
+  text_fps.y = HEIGHT - text_fps.height - offset;
 
   // navigation arrow
   // left
@@ -645,16 +679,24 @@ const gameSetup = (resources: any): void => {
     fontSize: 64,
     fill: "white",
   });
-  let message = new PIXI.Text("The End!", style);
-  message.x = 120;
-  message.y = 120;
-  gameOverScene.addChild(message);
+  let message_gameover = new PIXI.Text("Game Over!", style);
+  message_gameover.x = 120;
+  message_gameover.y = 120;
+  gameOverScene.addChild(message_gameover);
   // gameScene.addChild(message); // 位置確認用
 
+  let message_gameclear = new PIXI.Text("Game Clear!", style);
+  message_gameclear.x = 120;
+  message_gameclear.y = 120;
+  gameClearScene.addChild(message_gameclear);
+
+  console.log(resources.obj_6_data.url);
+
   // bgm test
-  let sound: Howl = new Howl({
-    src: ["assets/mp3/LittleBirdInTheGrass.mp3"],
-    autoplay: true,
+  let sound_bgm: Howl = new Howl({
+    // src: ["assets/mp3/LittleBirdInTheGrass.mp3"],
+    src: [resources.obj_6_data.url],
+    autoplay: false,
     loop: true,
     volume: 0.1,
     onend: () => {
@@ -662,8 +704,20 @@ const gameSetup = (resources: any): void => {
     },
   });
 
-  sound.play();
+  // sound_bgm.play();
   // Howler.volume(0.5);
+
+  // SE test
+  se1 = new Howl({
+    src: [resources.obj_7_data.url],
+    autoplay: false,
+    loop: false,
+    volume: 0.2,
+    onend: () => {
+      console.log("SE1 Finished!");
+      se1Flag = true;
+    },
+  });
 
   // ゲームのステートを`play`に設定する
   // state = play;
