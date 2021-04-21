@@ -11,5 +11,13 @@ kittykatattack / learningPixi
 [https://github.com/kittykatattack/learningPixi](https://github.com/kittykatattack/learningPixi)  
 >chap34- Case study: Treasure Hunter  
 
-Pixi v4.5.5 -> v6.0.2  
-JavaScript -> TypeScript
+PixiJS v4.5.5 -> v6.0.2  
+JavaScript -> TypeScript  
+add webpack  
+
+goldfire / howler.js  
+[https://github.com/goldfire/howler.js](https://github.com/goldfire/howler.js)  
+
+Free BGM sound asset site "nakano sound"  
+[http://www.nakano-sound.com/free/cute.html](http://www.nakano-sound.com/free/cute.html)  
+Use 草原の小鳥.mp3
