@@ -9,6 +9,7 @@ import { keyboard } from "./helper/keyboard";
 import { contain } from "./helper/contain";
 import { hitTestRectangle } from "./helper/hitTestRectangle";
 import Stats from "stats.js";
+import { Howl, Howler } from "howler"; // npm install --save @types/howler
 
 console.log(PIXI);
 
@@ -649,6 +650,20 @@ const gameSetup = (resources: any): void => {
   message.y = 120;
   gameOverScene.addChild(message);
   // gameScene.addChild(message); // 位置確認用
+
+  // bgm test
+  let sound: Howl = new Howl({
+    src: ["assets/mp3/LittleBirdInTheGrass.mp3"],
+    autoplay: true,
+    loop: true,
+    volume: 0.1,
+    onend: () => {
+      console.log("Finished!");
+    },
+  });
+
+  sound.play();
+  // Howler.volume(0.5);
 
   // ゲームのステートを`play`に設定する
   // state = play;
