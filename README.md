@@ -1,6 +1,6 @@
 # Test to move character with cursor key, on pixijs.
 
-<img src="https://evofan.github.io/pixijs_test_character_move/screenshot/pic_screenshot1.jpg" width="50%">  
+<img src="https://evofan.github.io/pixijs_test_character_move/screenshot/pic_screenshot2.jpg" width="50%">  
 
 Demo  
 [https://evofan.github.io/pixijs_test_character_move/dist/](https://evofan.github.io/pixijs_test_character_move/dist/)  
@@ -20,4 +20,8 @@ goldfire / howler.js
 
 Free BGM sound asset site "nakano sound"  
 [http://www.nakano-sound.com/free/cute.html](http://www.nakano-sound.com/free/cute.html)  
-Use 草原の小鳥.mp3
+Use 草原の小鳥.mp3  
+
+「SOUNDICONS」Free Digital Sound Effects  
+[https://www.brainstorm-inc.jp/](https://www.brainstorm-inc.jp/)  
+Use 8bitgame_001.mp3  
