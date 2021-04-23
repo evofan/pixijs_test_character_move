@@ -14,6 +14,7 @@ kittykatattack / learningPixi
 PixiJS v4.5.5 -> v6.0.2  
 JavaScript -> TypeScript  
 add webpack  
+add sound
 
 goldfire / howler.js  
 [https://github.com/goldfire/howler.js](https://github.com/goldfire/howler.js)  
@@ -24,4 +25,5 @@ Use 草原の小鳥.mp3
 
 「SOUNDICONS」Free Digital Sound Effects  
 [https://www.brainstorm-inc.jp/](https://www.brainstorm-inc.jp/)  
-Use 8bitgame_001.mp3  
+Use 8bitgame_001.wav  
+Use 8bitgame_300.wav  
