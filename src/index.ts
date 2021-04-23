@@ -67,6 +67,7 @@ const ASSET_OBJ4: string = ASSETS.ASSET_OBJ4;
 const ASSET_OBJ5: string = ASSETS.ASSET_OBJ5;
 const ASSET_OBJ6: string = ASSETS.ASSET_OBJ6;
 const ASSET_OBJ7: string = ASSETS.ASSET_OBJ7;
+const ASSET_OBJ8: string = ASSETS.ASSET_OBJ8;
 
 // init
 let bg: PIXI.Sprite;
@@ -133,6 +134,8 @@ let arrow_white_left: PIXI.Sprite,
 // Souned Effect
 let se1: Howl;
 let se1Flag: boolean = true;
+let se2: Howl;
+let se2Flag: boolean = true;
 
 // text
 let text_libVersion: PIXI.Text,
@@ -154,6 +157,7 @@ loader.add("obj_5_data", ASSET_OBJ5);
 
 loader.add("obj_6_data", ASSET_OBJ6);
 loader.add("obj_7_data", ASSET_OBJ7);
+loader.add("obj_8_data", ASSET_OBJ8);
 
 // Text loading
 let text_loading: PIXI.Text;
@@ -332,6 +336,10 @@ const gameLoop = (delta: number): void => {
   // Check for a collision between the explorer and the treasure
   if (hitTestRectangle(explorer, treasure)) {
     // If the treasure is touching the explorer, center it over the explorer
+    if(se2Flag){
+      se2Flag = false;
+      se2.play();
+    }
     treasure.x = explorer.x + 8;
     treasure.y = explorer.y + 8;
   }
@@ -718,6 +726,17 @@ const gameSetup = (resources: any): void => {
       se1Flag = true;
     },
   });
+
+  se2 = new Howl({
+    src: [resources.obj_8_data.url],
+    autoplay: false,
+    loop: false,
+    volume: 0.2,
+    onend: () => {
+      console.log("SE2 Finished!");
+    },
+  });
+
 
   // ゲームのステートを`play`に設定する
   // state = play;
