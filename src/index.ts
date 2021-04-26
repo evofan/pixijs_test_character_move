@@ -23,6 +23,11 @@ const WIDTH: number = STAGES.WIDTH;
 const HEIGHT: number = STAGES.HEIGHT;
 const BG_COLOR: number = STAGES.BG_COLOR;
 
+const BOUNDARY_RANGE_X: number = 28;
+const BOUNDARY_RANGE_Y: number = 10;
+const BOUNDARY_RANGE_WIDTH: number = 488;
+const BOUNDARY_RANGE_HEIGHT: number = 488;
+
 // renderer
 const renderer: PIXI.Renderer = new PIXI.Renderer({
   width: WIDTH,
@@ -251,7 +256,12 @@ const gameLoop = (delta: number): void => {
   explorer.y += explorer_vy;
 
   // Contain the explorer inside the area of the dungeon
-  contain(explorer, { x: 28, y: 10, width: 488, height: 480 });
+  contain(explorer, {
+    x: BOUNDARY_RANGE_X,
+    y: BOUNDARY_RANGE_Y,
+    width: BOUNDARY_RANGE_WIDTH,
+    height: BOUNDARY_RANGE_HEIGHT,
+  });
 
   // Set `explorerHit` to `false` before checking for a collision
   let explorerHit: boolean = false;
@@ -267,7 +277,12 @@ const gameLoop = (delta: number): void => {
     blob.y += blob_vy[idx];
 
     // BLOBのスクリーン上の境界をチェックする
-    let blobHitsWall = contain(blob, { x: 28, y: 10, width: 488, height: 480 });
+    let blobHitsWall = contain(blob, {
+      x: BOUNDARY_RANGE_X,
+      y: BOUNDARY_RANGE_Y,
+      width: BOUNDARY_RANGE_WIDTH,
+      height: BOUNDARY_RANGE_HEIGHT,
+    });
 
     // ブロブがステージの上または下に当たった場合は、方向を逆にします
     if (blobHitsWall === "top" || blobHitsWall === "bottom") {
@@ -336,7 +351,7 @@ const gameLoop = (delta: number): void => {
   // Check for a collision between the explorer and the treasure
   if (hitTestRectangle(explorer, treasure)) {
     // If the treasure is touching the explorer, center it over the explorer
-    if(se2Flag){
+    if (se2Flag) {
       se2Flag = false;
       se2.play();
     }
@@ -736,7 +751,6 @@ const gameSetup = (resources: any): void => {
       console.log("SE2 Finished!");
     },
   });
-
 
   // ゲームのステートを`play`に設定する
   // state = play;
