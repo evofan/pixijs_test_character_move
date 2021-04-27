@@ -1,5 +1,5 @@
 import * as PIXI from "pixi.js";
-// webpack v5 error. import { loader } from "webpack";
+// webpack error on PixiJS v5. import { loader } from "webpack";
 import { WebpackPluginInstance as loader } from "webpack";
 // window.PIXI = PIXI;
 import { STAGES, ASSETS, GAMES } from "./constants";
@@ -55,7 +55,9 @@ let animate: FrameRequestCallback = (): void => {
   requestAnimationFrame(animate);
 
   // GameLoop
-  gameLoop(deltaTime);
+  if (gameLoopFlag) {
+    gameLoop(deltaTime);
+  }
 
   stats.end();
 };
@@ -74,9 +76,6 @@ const ASSET_OBJ6: string = ASSETS.ASSET_OBJ6;
 const ASSET_OBJ7: string = ASSETS.ASSET_OBJ7;
 const ASSET_OBJ8: string = ASSETS.ASSET_OBJ8;
 
-// init
-let bg: PIXI.Sprite;
-
 // container
 let container: PIXI.Container = new PIXI.Container();
 container.width = WIDTH;
@@ -90,11 +89,10 @@ container.interactiveChildren = false;
 container.buttonMode = false;
 stage.addChild(container);
 
-// container for add particle
-let container_effect: PIXI.Container = new PIXI.Container();
+// init
+let bg: PIXI.Sprite;
 
 let gameState: string = "init";
-let atras: PIXI.Sprite;
 let gameLoopFlag: boolean = false;
 
 let gameScene: PIXI.Container = new PIXI.Container();
@@ -121,12 +119,12 @@ let numberOfBlobs: number = 6,
   blob_direction: number = 1,
   blob_vy: number[] = [];
 
-// 体力バー用コンテナ
+// hp bar
 let healthBar: PIXI.Container = new PIXI.Container();
 let innerBar: PIXI.Graphics = new PIXI.Graphics();
 let outerBar = new PIXI.Graphics();
 
-// arrow
+// arrow for cursor-key use
 let arrow_white_left: PIXI.Sprite,
   arrow_white_up: PIXI.Sprite,
   arrow_white_right: PIXI.Sprite,
@@ -136,7 +134,7 @@ let arrow_white_left: PIXI.Sprite,
   arrow_red_right: PIXI.Sprite,
   arrow_red_down: PIXI.Sprite;
 
-// Souned Effect
+// sound
 let se1: Howl;
 let se1Flag: boolean = true;
 let se2: Howl;
@@ -164,38 +162,15 @@ loader.add("obj_6_data", ASSET_OBJ6);
 loader.add("obj_7_data", ASSET_OBJ7);
 loader.add("obj_8_data", ASSET_OBJ8);
 
-// Text loading
-let text_loading: PIXI.Text;
-text_loading = new PIXI.Text(`Loading asset data ....`, {
-  fontFamily: "Arial",
-  fontSize: 10,
-  fill: 0xff0033,
-  align: "left",
-  fontWeight: "bold",
-  stroke: "#000000",
-  strokeThickness: 4,
-  dropShadow: false,
-  dropShadowColor: "#666666",
-  lineJoin: "round",
-});
-container.addChild(text_loading);
-text_loading.x = 10;
-text_loading.y = 10;
-
 loader.load((loader: PIXI.Loader, resources: any) => {
   console.log(loader);
   console.log(resources);
-
-  container.removeChild(text_loading);
 
   // bg
   if (ASSET_BG !== "") {
     bg = new PIXI.Sprite(resources.bg_data.texture);
     container.addChild(bg);
   }
-
-  // app start
-  // requestAnimationFrame(animate);
 
   gameSetup(resources);
 });
@@ -318,26 +293,19 @@ const gameLoop = (delta: number): void => {
   // explorerHitがtrueの場合、play()関数は探検家を半透明にし、体力バーの幅を1ピクセル縮小します。
 
   if (explorerHit) {
-    // 冒険家を半透明にする
+    // Make the explorer translucent
     explorer.alpha = 0.5;
 
-    // 効果音
-    /*
-    if(se1Flag){
-      se1Flag = false;
-      se1.play();
-    }
-    */
     se1.stop();
     se1.play(); // 開始後に少し空白があるのでトル
 
-    // 体力バーの内側の長方形の幅を1ピクセル減らす
+    // hp bar minus
     outerBar.width -= 1;
     if (outerBar.width < 0) {
       outerBar.width = 0;
     }
   } else {
-    // ヒットしていない場合は、冒険家を完全に不透明'Opaque'（不透明'non-transparent'）にします。
+    // If not hit, make the explorer completely opaque(non-transparent)
     explorer.alpha = 1;
   }
 
@@ -347,7 +315,6 @@ const gameLoop = (delta: number): void => {
   // ヒットした場合、宝物はわずかにオフセットされた状態で探索者探検家の位置に設定されます。
   // これはそれが探検家が宝物を運んでいるように見えます。
 
-  // これを行うコードは次のとおりです。
   // Check for a collision between the explorer and the treasure
   if (hitTestRectangle(explorer, treasure)) {
     // If the treasure is touching the explorer, center it over the explorer
@@ -364,14 +331,14 @@ const gameLoop = (delta: number): void => {
   if (outerBar.width <= 0) {
     gameState = "end";
     gameOver();
-    //message.text = "You lost!";
+    // message.text = "You lost!";
   }
 
-  //If the explorer has brought the treasure to the exit,
-  //end the game and display "You won!"
+  // If the explorer has brought the treasure to the exit,
+  // end the game and display "You won!"
   if (hitTestRectangle(treasure, door)) {
     gameState = "end";
-    //message.text = "You won!";
+    // message.text = "You won!";
     gameEnd();
   }
 };
@@ -390,104 +357,82 @@ const gamePlay = (): void => {
   //}
 };
 
+/**
+ * I have all the code that should be executed at the end of the game.
+ */
 const gameEnd = (): void => {
   console.log("gameEnd()");
-  // ゲーム終了時に実F行されるべきすべてのコードがあります。
+  gameLoopFlag = false;
   gameScene.visible = false;
   gameOverScene.visible = false;
   gameClearScene.visible = true;
 };
 
+/**
+ * I have all the code that should be executed at the end of the game.
+ */
 const gameOver = (): void => {
   console.log("gameOver()");
-  // ゲーム終了時に実F行されるべきすべてのコードがあります。
+  gameLoopFlag = false;
   gameScene.visible = false;
   gameOverScene.visible = true;
   gameClearScene.visible = false;
 };
 
-// テクスチャアトラス画像がロードされるとすぐに、setup()関数が実行されます。
-// それは一度だけ実行され、あなたはあなたのゲームのために一度だけセットアップタスクを実行することを可能にします。
-// オブジェクト、スプライト、ゲームシーンの作成や初期化、データ配列の生成、ロードされたJSONゲームデータの解析を行うのに最適な場所です。
-
-// これがTreasure Hunterのセットアップ機能とそれが実行するタスクの概要です。
-
-// 最後の2行のコード、state = play。 そしてgameLoop()がおそらく最も重要です。
-// PixiのティッカーにgameLoop()を追加すると、ゲームのエンジンがオンになり、play()関数が連続ループで呼び出されます。
-// しかし、それがどのように機能するのかを見る前に、setup()関数内の特定のコードが何をするのか見てみましょう。
+/**
+ * The setup() function is executed as soon as the texture atlas image is loaded.
+ * It runs only once and allows you to run the setup task only once for your game.
+ * Great place to create and initialize objects, sprites, game scenes, generate data arrays, and analyze loaded JSON game data.
+ * @param resources
+ */
 const gameSetup = (resources: any): void => {
   console.log("gameSetup()");
-  // ゲームスプライトを初期化し、ゲームの `state`を` play`に設定して 'gameLoop'を起動します
+  // Initialize the game sprite, set the game's `state` to` play` and launch'gameLoop'.
 
-  //Create the `gameScene` group
+  // 1. GAME SCENE
 
-  //Create the `door` sprite
-
-  //Create the `player` sprite
-
-  //Create the `treasure` sprite
-
-  //Make the enemies
-
-  //Create the health bar
-
-  //Add some text for the game over message
-
-  //Create a `gameOverScene` group
-
-  //Assign the player's keyboard controllers
-
-  // ■1.ゲームのシーンを作成する
-
-  // setup()関数は、gameSceneとgameOverSceneという2つのコンテナグループを作成します。
-  // これらのそれぞれがステージに追加されます。
-
+  // Create the `gameScene` group
   container.addChild(gameScene);
   gameScene.x = 0;
   gameScene.y = 0;
 
+  // Create a `gameOverScene` group
   container.addChild(gameOverScene);
   gameOverScene.visible = false;
 
   container.addChild(gameClearScene);
   gameClearScene.visible = false;
 
-  // メインゲームの一部であるスプライトはすべてgameSceneグループに追加されます。
-  // ゲーム終了時に表示されるべきゲームオーバーテキストは、gameOverSceneグループに追加されます。
+  // All sprites that are part of the main game will be added to the gameScene group.
+  // The game over text that should be displayed at the end of the game will be added to the gameOverScene group.
 
-  // これはsetup()関数内で作成されますが、ゲームが最初に起動したときにgameOverSceneが表示されないようにする必要があります。
-  // そのため、そのvisibleプロパティはfalseに初期化されています。
-  gameOverScene.visible = false;
+  // This is created inside the setup() function, but you need to prevent the gameOverScene from appearing the first time the game is launched.
+  // Therefore, its visible property is initialized to false.
 
-  // ゲームが終了すると、gameOverSceneのvisibleプロパティがtrueに設定され、
-  // ゲームの終わりに表示されるテキストが表示されます。
-  // （※シーン切り替えの考え方）
+  // When the game is over, the visible property of gameOverScene is set to true,
+  // You will see the text that will be displayed at the end of the game.
+  // (* Concept of scene switching)
 
-  // ■2.ダンジョン、ドア、探検家、宝箱の作成
+  // 2. SPRITE
 
-  // プレイヤー（探検家）、出口のドア、宝箱、ダンジョンの背景画像はすべてテクスチャアトラスフレームから作られたスプライトです。
-  // 非常に重要なことに、それらはすべてgameSceneの子（children）として追加されています。
+  // Player (explorer), exit door, treasure chest, dungeon background images are all sprites made from textured atlas frames.
+  // Very importantly, they are all added as children of gameScene.
 
-  // テクスチャアトラスフレームIDのエイリアスを作成します。
-  // id = resources["images/treasureHunter.json"].textures;
-
-  //（２）loaderのresourcesを使ってテクスチャにアクセスする
-  // let car = new PIXI.Sprite(resources["images/atras.json"].textures["pic_car.png"]);
-
+  // set sprite sheet(texture atras frame)
   let id: any = resources.obj_3_data.textures;
 
-  // ダンジョン
+  // Create the `dungeon` sprite
   dungeon = new PIXI.Sprite(id["dungeon.png"]);
   dungeon.x = 0;
   dungeon.y = 0;
   gameScene.addChild(dungeon);
 
-  // ドア
+  // Create the `door` sprite
   door = new PIXI.Sprite(id["door.png"]);
   door.position.set(32, 0);
   gameScene.addChild(door);
 
-  // プレイヤー（探検家）
+  // Create the `player(explorer)` sprite
   explorer = new PIXI.Sprite(id["explorer.png"]);
   explorer.x = 68;
   explorer.y = gameScene.height / 2 - explorer.height / 2;
@@ -495,29 +440,151 @@ const gameSetup = (resources: any): void => {
   explorer_vy = 0;
   gameScene.addChild(explorer);
 
-  // 宝箱
+  // Create the `treasure` sprite
   treasure = new PIXI.Sprite(id["treasure.png"]);
   treasure.x = gameScene.width - treasure.width - 48;
   treasure.y = gameScene.height / 2 - treasure.height / 2;
   gameScene.addChild(treasure);
 
-  // それら（ダンジョン、ドア、プレイヤー、宝箱）をgameSceneグループにまとめておくと、ゲームが終了したときにgameSceneを非表示にして
-  // gameOverSceneを表示するのが簡単になります。
-  //（※シーン切り替えをスマートにする考え方）
+  // Putting them together (dungeon, door, player, treasure chest) in a gameScene group makes
+  // it easier to hide the gameScene and show the gameOverScene when the game is over.
+
+  // 3. CREATE MONSTER
+
+  // Six blob (small chunks) monsters are created in one loop.
+  // Each blob is given a random initial position and velocity.
+  // Vertical velocity is alternately multiplied by 1 or -1 for each blob.
+  // Therefore, each blob moves in the opposite direction to the next.
+  // Each blob monster created is pushed (stored in) in an array called blobs.
+
+  // Create as many blobs as `numberOfBlobs`.
+  for (let i: number = 0; i < numberOfBlobs; i++) {
+    // Create a blob.
+    let blob: PIXI.Sprite = new PIXI.Sprite(id["blob.png"]);
+
+    // Space each blob horizontally according to the value of `spacing`.
+    let x: number = blob_spacing * i + blob_xOffset; // `xOffset` determines the position from the left of the screen where the first blob should be added.
+
+    // Give the blob a random "y" position.
+    let y: number = randomInt(0, stage.height - blob.height);
+
+    // Set the blob position.
+    blob.x = x;
+    blob.y = y;
+
+    // Set the vertical velocity of the blob.
+    // direction can be either 1 or -1.
+    // "1" means the enemy moves down, "-1" means the blob moves up.
+    // Multiply `direction` by` speed` to determine the vertical direction of the blob.
+    blob_vy[i] = blob_speed * blob_direction;
+
+    // Reverse the direction of the next blob.
+    blob_direction *= -1;
+
+    // Push (add) blobs to the `blobs` array
+    blobs.push(blob);
+
+    // Add blobs to `gameScene`.
+    gameScene.addChild(blob);
+  }
+
+  // 4. HEALTH BAR
+
+  // Playing Treasure Hunter narrows the health Bar in the upper right corner of the screen when an explorer touches one of the enemies.
+  // How was this fitness bar made? It's two overlapping rectangles in exactly the same position.
+  // The black rectangle at the back and the red rectangle at the front. They are grouped together in one health bar group.
+  // After that, the health bar will be added to the gameScene and placed on the stage.
+
+  // Creating a health bar
+  healthBar.position.set(WIDTH - 170, 12);
+  gameScene.addChild(healthBar);
+
+  // Create a rectangle with a black background.
+  innerBar.beginFill(0x000000);
+  innerBar.drawRect(0, 0, 129, 10);
+  innerBar.endFill();
+  healthBar.addChild(innerBar);
+
+  // Create a red rectangle on the front.
+  outerBar.beginFill(0x990000);
+  outerBar.drawRect(0, 0, 128, 8);
+  outerBar.endFill();
+  healthBar.addChild(outerBar);
+
+  // 5. MESSAGE TEXT
+
+  // When the game is over, you will see the text "You won" or "You lost" depending on the result of the game.
+  // This is done by using a text sprite and adding it to the gameOverScene.
+  // This text will not be displayed because the visible property of gameOverScene is set to false at the start of the game.
+  let style = new PIXI.TextStyle({
+    fontFamily: "Futura",
+    fontSize: 64,
+    fill: "white",
+  });
+
+  let message_gameover = new PIXI.Text("Game Over!", style);
+  message_gameover.x = 120;
+  message_gameover.y = 120;
+  gameOverScene.addChild(message_gameover);
+
+  let message_gameclear = new PIXI.Text("Game Clear!", style);
+  message_gameclear.x = 120;
+  message_gameclear.y = 120;
+  gameClearScene.addChild(message_gameclear);
+
+  console.log(resources.obj_6_data.url);
+
+  // 6. SOUND
+
+  // bgm test
+  let sound_bgm: Howl = new Howl({
+    src: [resources.obj_6_data.url],
+    autoplay: false, // The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu
+    loop: true,
+    volume: 0.1,
+    onend: () => {
+      console.log("bgm finished.");
+    },
+  });
+  // sound_bgm.play();
+  // Howler.volume(0.5);
+
+  // SE test
+  se1 = new Howl({
+    src: [resources.obj_7_data.url],
+    autoplay: false,
+    loop: false,
+    volume: 0.2,
+    onend: () => {
+      console.log("SE1 finished.");
+      se1Flag = true;
+    },
+  });
+
+  se2 = new Howl({
+    src: [resources.obj_8_data.url],
+    autoplay: false,
+    loop: false,
+    volume: 0.2,
+    onend: () => {
+      console.log("SE2 finished.");
+    },
+  });
+
+  // 7. UI
 
   // text
   let offset: number = 10;
 
   // text version
-  // let version: string = "PixiJS: 5.3.3\nwebpack: 4.44.0\nTypeScript: 4.0.2";
   let version: string = `PixiJS: ver.${PIXI.VERSION}`;
   text_libVersion = setText(version, "Arial", 16, 0xf0fff0, "left", "normal");
   container.addChild(text_libVersion);
-  text_libVersion.x = offset;
-  text_libVersion.y = offset;
+  text_libVersion.x = offset + 60;
+  text_libVersion.y = offset - 5;
 
   // text description
-  let description: string = "Character Move Test";
+  let description: string = "Treature Hunter";
   text_description = setText(
     description,
     "Arial",
@@ -533,14 +600,14 @@ const gameSetup = (resources: any): void => {
   );
   container.addChild(text_description);
   text_description.x = WIDTH / 2 - text_description.width / 2;
-  text_description.y = offset;
+  text_description.y = HEIGHT - text_description.height;
 
   // text message
-  let message_navi: string = "Use cursor key";
+  let message_navi: string = "HP :";
   text_message = setText(
     message_navi,
     "Arial",
-    24,
+    16,
     0xff0033,
     "center",
     "bold",
@@ -551,14 +618,14 @@ const gameSetup = (resources: any): void => {
     "round"
   );
   container.addChild(text_message);
-  text_message.x = WIDTH / 2 - text_message.width / 2;
-  text_message.y = HEIGHT - text_message.height - offset;
+  text_message.x = 300;
+  text_message.y = 5;
 
   // text fps
   text_fps = setText(`FPS: ${fps}`, "Impact", 16, 0xf0fff0, "left", "normal");
   container.addChild(text_fps);
   text_fps.x = offset;
-  text_fps.y = HEIGHT - text_fps.height - offset;
+  text_fps.y = HEIGHT - text_fps.height - 5;
 
   // navigation arrow
   // left
@@ -616,232 +683,90 @@ const gameSetup = (resources: any): void => {
   arrow_red_down.visible = false;
   container.addChild(arrow_red_down);
 
-  // ■3.モンスターの作成
+  // Subscribe Cursor Key
+  const left = keyboard(37),
+    up = keyboard(38),
+    right = keyboard(39),
+    down = keyboard(40);
 
-  // 6つのブロブ（BLOB：小さい固まり）モンスターが1つのループ内に作成されます。
-  // 各ブロブにはランダムな初期位置とvelocity（速度）が与えられます。
-  // 垂直方向の速度は、各ブロブに対して交互に1または-1で乗算されます。
-  // そのため、各ブロブは隣の方向とは反対方向に移動します。
-  // 作成されたそれぞれのブロブモンスターは、blobsと呼ばれる配列にプッシュ（で格納）されます。
+  // Left Cursor Key
+  left.press = () => {
+    console.log("left.press");
+    explorer_vx = -explorer_speed;
+    explorer_vy = 0;
+    arrow_white_left.visible = false;
+    arrow_red_left.visible = true;
+  };
+  left.release = () => {
+    console.log("left.release");
+    arrow_white_left.visible = true;
+    arrow_red_left.visible = false;
+    if (!right.isDown && explorer_vy === 0) {
+      // If this discrimination is entered, if the reverse key is pressed,
+      // that will be prioritized over the released key (the movement will not stop once, it will move smoothly).
+      explorer_vx = 0;
+    }
+    // keyboard(37).unsubscribe(); // ok
+  };
 
-  // `numberOfBlobs`と同数のブロブを作成します
-  for (let i: number = 0; i < numberOfBlobs; i++) {
-    // ブロブを作成する
-    let blob: PIXI.Sprite = new PIXI.Sprite(id["blob.png"]); // `xOffset`は最初のブロブが追加されるべき画面の左からの位置を決定します
+  // Up Cursor Key
+  up.press = () => {
+    console.log("up.press");
+    explorer_vx = 0;
+    explorer_vy = -explorer_speed;
+    arrow_white_up.visible = false;
+    arrow_red_up.visible = true;
+  };
+  up.release = () => {
+    console.log("up.release");
+    arrow_white_up.visible = true;
+    arrow_red_up.visible = false;
+    if (!down.isDown && explorer_vx === 0) {
+      explorer_vy = 0;
+    }
+  };
 
-    // `spacing`の値に従って各ブロブを水平方向に間隔を空けます。
-    let x: number = blob_spacing * i + blob_xOffset;
+  // Right Cursor Key
+  right.press = () => {
+    console.log("right.press");
+    explorer_vx = explorer_speed;
+    explorer_vy = 0;
+    arrow_white_right.visible = false;
+    arrow_red_right.visible = true;
+  };
+  right.release = () => {
+    console.log("right.release");
+    arrow_white_right.visible = true;
+    arrow_red_right.visible = false;
+    if (!left.isDown && explorer_vy === 0) {
+      explorer_vx = 0;
+    }
+  };
 
-    // ブロブにランダムな「y」位置を与える
-    let y: number = randomInt(0, stage.height - blob.height);
+  // Down Cursor Key
+  down.press = () => {
+    console.log("down.press");
+    explorer_vx = 0;
+    explorer_vy = explorer_speed;
+    arrow_white_down.visible = false;
+    arrow_red_down.visible = true;
+  };
+  down.release = () => {
+    console.log("down.release");
+    arrow_white_down.visible = true;
+    arrow_red_down.visible = false;
+    if (!up.isDown && explorer_vx === 0) {
+      explorer_vy = 0;
+    }
+  };
 
-    // ブロブの位置を設定する
-    blob.x = x;
-    blob.y = y;
-
-    // ブロブの垂直方向の速度を設定します。
-    // directionは、1か-1のどちらかになります。
-    // 「1」は敵が下に移動することを意味し、「-1」はブロブが上に移動することを意味します。
-    //　`direction`を` speed`で乗算すると、ブロブの垂直方向が決まります。
-    // blob.vy = speed * direction;
-    blob_vy[i] = blob_speed * blob_direction; // ★後で動かすのでglobalに保存しておく
-
-    // 次のブロブの方向を逆にする
-    blob_direction *= -1;
-
-    // ブロブを`blobs`配列にプッシュ（追加）します
-    blobs.push(blob);
-
-    // ブロブを`gameScene`に追加します
-    gameScene.addChild(blob);
-  }
-
-  // ■4.ヘルス（体力）バーの作成
-
-  // Treasure Hunterをプレイすると、探検家が敵の1人に触れると、画面の右上隅にあるhealthBar（体力バー）の幅が狭くなります。
-  // この体力バーはどうやって作られたのですか？ それはちょうど同じ位置にある2つの重なっている長方形です。
-  // 後ろの黒い長方形と前の赤い長方形です。 それらは1つの体力バーグループにまとめられています。
-  // その後、体力バーがgameSceneに追加され、ステージ上に配置されます。
-
-  // 体力バーを作成する
-  // healthBar = new PIXI.Container();
-  healthBar.position.set(WIDTH - 170, 4);
-  // healthBar.x = stage.width - 170;
-  // healthBar.y = 4;
-  gameScene.addChild(healthBar);
-
-  // 黒い背景の四角形を作成する
-  innerBar.beginFill(0x000000);
-  innerBar.drawRect(0, 0, 128, 8);
-  innerBar.endFill();
-  healthBar.addChild(innerBar);
-
-  // 前面の赤い長方形を作成する
-  outerBar.beginFill(0xff3300);
-  outerBar.drawRect(0, 0, 128, 8);
-  outerBar.endFill();
-  healthBar.addChild(outerBar);
-
-  // healthBar.outer = outerBar; // err
-  // outerというプロパティがhealthBarに追加されたことがわかります。
-  // 後でアクセスするのに便利なように、outerBar（赤い長方形）を参照するだけです。
-  // healthBar.outer = outerBar;
-  // それはかなりきれいで読みやすいです、それで我々はそれを守ります！
-  // あなたはこれをする必要はありません。 しかし、なぜそうではないのでしょう！
-  // つまり、赤いouterBarの幅を制御したい場合は、次のような滑らかなコードを書くことができます。
-  // healthBar.outer.width = 30;
-
-  // ■5.メッセージテキストの作成
-
-  // ゲームが終了すると、ゲームの結果に応じて「あなたは勝ちました」または「あなたは負けました」というテキストが表示されます。
-  // これはテキストスプライトを使用してそれをgameOverSceneに追加することで行われます。
-  // ゲームの開始時にgameOverSceneのvisibleプロパティはfalseに設定されているため、このテキストは表示されません。
-  // これは、メッセージテキストを作成してそれをgameOverSceneに追加するsetup関数のコードです。
-  let style = new PIXI.TextStyle({
-    fontFamily: "Futura",
-    fontSize: 64,
-    fill: "white",
-  });
-  let message_gameover = new PIXI.Text("Game Over!", style);
-  message_gameover.x = 120;
-  message_gameover.y = 120;
-  gameOverScene.addChild(message_gameover);
-  // gameScene.addChild(message); // 位置確認用
-
-  let message_gameclear = new PIXI.Text("Game Clear!", style);
-  message_gameclear.x = 120;
-  message_gameclear.y = 120;
-  gameClearScene.addChild(message_gameclear);
-
-  console.log(resources.obj_6_data.url);
-
-  // bgm test
-  let sound_bgm: Howl = new Howl({
-    // src: ["assets/mp3/LittleBirdInTheGrass.mp3"],
-    src: [resources.obj_6_data.url],
-    autoplay: false,
-    loop: true,
-    volume: 0.1,
-    onend: () => {
-      console.log("Finished!");
-    },
-  });
-
-  // sound_bgm.play();
-  // Howler.volume(0.5);
-
-  // SE test
-  se1 = new Howl({
-    src: [resources.obj_7_data.url],
-    autoplay: false,
-    loop: false,
-    volume: 0.2,
-    onend: () => {
-      console.log("SE1 Finished!");
-      se1Flag = true;
-    },
-  });
-
-  se2 = new Howl({
-    src: [resources.obj_8_data.url],
-    autoplay: false,
-    loop: false,
-    volume: 0.2,
-    onend: () => {
-      console.log("SE2 Finished!");
-    },
-  });
-
-  // ゲームのステートを`play`に設定する
-  // state = play;
   gameState = "play";
 
-  // ゲームのループをスタートする
-  // app.ticker.add(delta => gameLoop(delta));
-
   // app start
-  requestAnimationFrame(animate); // フラグ管理の代わりにここで初めてEnterFrame
+  gameLoopFlag = true;
+  requestAnimationFrame(animate); // -> gameLoop start
 };
 
 // The game's helper functions:
-// ゲームのヘルパー関数：
-//　「キーボード（keyboard）」、「ヒットテスト（hitTestRectangle）」「コンテイン（contain）」「ランダム数値（randomInt）」
-
-//// ゲームのヘルパー関数 ////
-// →外部化
-
-// Subscribe Cursor Key
-const left = keyboard(37),
-  up = keyboard(38),
-  right = keyboard(39),
-  down = keyboard(40);
-
-// Left Cursor Key
-left.press = () => {
-  console.log("left.press");
-  explorer_vx = -explorer_speed;
-  explorer_vy = 0;
-  arrow_white_left.visible = false;
-  arrow_red_left.visible = true;
-};
-left.release = () => {
-  console.log("left.release");
-  arrow_white_left.visible = true;
-  arrow_red_left.visible = false;
-  if (!right.isDown && explorer_vy === 0) {
-    // この判別入れると逆キー押した場合は離したキーよりそちらが優先される（一旦移動停止しない、滑らかに動く）
-    explorer_vx = 0;
-  }
-  // keyboard(37).unsubscribe(); // ok
-};
-
-// Up Cursor Key
-up.press = () => {
-  console.log("up.press");
-  explorer_vx = 0;
-  explorer_vy = -explorer_speed;
-  arrow_white_up.visible = false;
-  arrow_red_up.visible = true;
-};
-up.release = () => {
-  console.log("up.release");
-  arrow_white_up.visible = true;
-  arrow_red_up.visible = false;
-  if (!down.isDown && explorer_vx === 0) {
-    explorer_vy = 0;
-  }
-};
-
-// Right Cursor Key
-right.press = () => {
-  console.log("right.press");
-  explorer_vx = explorer_speed;
-  explorer_vy = 0;
-  arrow_white_right.visible = false;
-  arrow_red_right.visible = true;
-};
-right.release = () => {
-  console.log("right.release");
-  arrow_white_right.visible = true;
-  arrow_red_right.visible = false;
-  if (!left.isDown && explorer_vy === 0) {
-    explorer_vx = 0;
-  }
-};
-
-// Down Cursor Key
-down.press = () => {
-  console.log("down.press");
-  explorer_vx = 0;
-  explorer_vy = explorer_speed;
-  arrow_white_down.visible = false;
-  arrow_red_down.visible = true;
-};
-down.release = () => {
-  console.log("down.release");
-  arrow_white_down.visible = true;
-  arrow_red_down.visible = false;
-  if (!up.isDown && explorer_vx === 0) {
-    explorer_vy = 0;
-  }
-};
+// 'keyboard', 'hitTestRectangle', 'contain', 'randomInt'
+// -> Externalization

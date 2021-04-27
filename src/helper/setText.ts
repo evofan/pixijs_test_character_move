@@ -18,7 +18,7 @@ export const setText: Function = (
   message: string | number,
   fontfamily: string = "Arial",
   fontsize: number = 12,
-  fillcolor: number = 0xffffff,
+  fillcolor: number = 0xff0000,
   align: TextStyleAlign = "left",
   fontweight: TextStyleFontWeight = "normal",
   strokecolor: string = "#000000",
