@@ -10,6 +10,7 @@ import { contain } from "./helper/contain";
 import { hitTestRectangle } from "./helper/hitTestRectangle";
 import Stats from "stats.js";
 import { Howl, Howler } from "howler"; // npm install --save @types/howler
+import { gsap, TimelineMax, TweenMax } from "gsap"; // npm install -D @types/gsap
 
 console.log(PIXI);
 
@@ -98,6 +99,8 @@ let gameLoopFlag: boolean = false;
 let gameScene: PIXI.Container = new PIXI.Container();
 let gameOverScene: PIXI.Container = new PIXI.Container();
 let gameClearScene: PIXI.Container = new PIXI.Container();
+let message_gameover: PIXI.Text;
+let message_gameclear: PIXI.Text;
 
 // game sprite
 let dungeon: PIXI.Sprite;
@@ -366,6 +369,16 @@ const gameEnd = (): void => {
   // gameScene.visible = false;
   gameOverScene.visible = false;
   gameClearScene.visible = true;
+  // create a new timeline instance
+  let tl: TimelineMax = new TimelineMax();
+  // the following two lines do the SAME thing:
+  message_gameclear.x = 0;
+  tl.add(
+    TweenMax.to(message_gameclear, 1, {
+      x: WIDTH / 2 - message_gameclear.width / 2,
+    })
+  );
+  // tl.to(umbrella, 2, { x: 300 }); // shorter syntax!
 };
 
 /**
@@ -374,9 +387,14 @@ const gameEnd = (): void => {
 const gameOver = (): void => {
   console.log("gameOver()");
   gameLoopFlag = false;
-  // gameScene.visible = false;
+  gameScene.visible = false;
   gameOverScene.visible = true;
   gameClearScene.visible = false;
+  // create a new timeline instance
+  //let tl: TimelineMax = new TimelineMax();
+  // the following two lines do the SAME thing:
+  //tl.add(TweenMax.to(message_gameover, 2, { scaleX: 3, scaleY: 3 }));
+  // tl.to(umbrella, 2, { x: 300 }); // shorter syntax!
 };
 
 /**
@@ -521,12 +539,12 @@ const gameSetup = (resources: any): void => {
     fontSize: 64,
     fill: "white",
   });
-  let message_gameover = new PIXI.Text("Game Over!", style);
+  message_gameover = new PIXI.Text("Game Over!", style);
   message_gameover.x = WIDTH / 2 - message_gameover.width / 2;
   message_gameover.y = HEIGHT / 2 - message_gameover.height;
   gameOverScene.addChild(message_gameover);
 
-  let message_gameclear = new PIXI.Text("Game Clear!", style);
+  message_gameclear = new PIXI.Text("Game Clear!", style);
   message_gameclear.x = WIDTH / 2 - message_gameclear.width / 2;
   message_gameclear.y = HEIGHT / 2 - message_gameclear.height;
   gameClearScene.addChild(message_gameclear);
