@@ -14,7 +14,8 @@ kittykatattack / learningPixi
 PixiJS v4.5.5 -> v6.0.2  
 JavaScript -> TypeScript  
 add webpack  
-add sound
+add sound  
+add GSAP  
 
 goldfire / howler.js  
 [https://github.com/goldfire/howler.js](https://github.com/goldfire/howler.js)  
