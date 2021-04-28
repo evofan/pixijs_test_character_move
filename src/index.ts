@@ -363,7 +363,7 @@ const gamePlay = (): void => {
 const gameEnd = (): void => {
   console.log("gameEnd()");
   gameLoopFlag = false;
-  gameScene.visible = false;
+  // gameScene.visible = false;
   gameOverScene.visible = false;
   gameClearScene.visible = true;
 };
@@ -374,7 +374,7 @@ const gameEnd = (): void => {
 const gameOver = (): void => {
   console.log("gameOver()");
   gameLoopFlag = false;
-  gameScene.visible = false;
+  // gameScene.visible = false;
   gameOverScene.visible = true;
   gameClearScene.visible = false;
 };
@@ -413,7 +413,7 @@ const gameSetup = (resources: any): void => {
   // You will see the text that will be displayed at the end of the game.
   // (* Concept of scene switching)
 
-  // 2. SPRITE
+  // 2. CREATE SPRITE
 
   // Player (explorer), exit door, treasure chest, dungeon background images are all sprites made from textured atlas frames.
   // Very importantly, they are all added as children of gameScene.
@@ -521,15 +521,14 @@ const gameSetup = (resources: any): void => {
     fontSize: 64,
     fill: "white",
   });
-
   let message_gameover = new PIXI.Text("Game Over!", style);
-  message_gameover.x = 120;
-  message_gameover.y = 120;
+  message_gameover.x = WIDTH / 2 - message_gameover.width / 2;
+  message_gameover.y = HEIGHT / 2 - message_gameover.height;
   gameOverScene.addChild(message_gameover);
 
   let message_gameclear = new PIXI.Text("Game Clear!", style);
-  message_gameclear.x = 120;
-  message_gameclear.y = 120;
+  message_gameclear.x = WIDTH / 2 - message_gameclear.width / 2;
+  message_gameclear.y = HEIGHT / 2 - message_gameclear.height;
   gameClearScene.addChild(message_gameclear);
 
   console.log(resources.obj_6_data.url);
@@ -580,8 +579,8 @@ const gameSetup = (resources: any): void => {
   let version: string = `PixiJS: ver.${PIXI.VERSION}`;
   text_libVersion = setText(version, "Arial", 16, 0xf0fff0, "left", "normal");
   container.addChild(text_libVersion);
-  text_libVersion.x = offset + 60;
-  text_libVersion.y = offset - 5;
+  text_libVersion.x = WIDTH - text_libVersion.width - offset;
+  text_libVersion.y = HEIGHT - text_libVersion.height - 5;
 
   // text description
   let description: string = "Treature Hunter";
@@ -603,7 +602,7 @@ const gameSetup = (resources: any): void => {
   text_description.y = HEIGHT - text_description.height;
 
   // text message
-  let message_navi: string = "HP :";
+  let message_navi: string = "HP:";
   text_message = setText(
     message_navi,
     "Arial",
@@ -618,7 +617,7 @@ const gameSetup = (resources: any): void => {
     "round"
   );
   container.addChild(text_message);
-  text_message.x = 300;
+  text_message.x = 305;
   text_message.y = 5;
 
   // text fps
@@ -633,13 +632,13 @@ const gameSetup = (resources: any): void => {
   arrow_white_left.scale.x = arrow_white_left.scale.y = 0.5;
   arrow_white_left.angle = 180;
   arrow_white_left.x = 408;
-  arrow_white_left.y = 460;
+  arrow_white_left.y = 440;
   container.addChild(arrow_white_left);
   arrow_red_left = new PIXI.Sprite(resources.obj_5_data.texture);
   arrow_red_left.scale.x = arrow_red_left.scale.y = 0.5;
   arrow_red_left.angle = 180;
   arrow_red_left.x = 408;
-  arrow_red_left.y = 460;
+  arrow_red_left.y = 440;
   arrow_red_left.visible = false;
   container.addChild(arrow_red_left);
   // up
@@ -647,25 +646,25 @@ const gameSetup = (resources: any): void => {
   arrow_white_up.scale.x = arrow_white_up.scale.y = 0.5;
   arrow_white_up.angle = -90;
   arrow_white_up.x = 410;
-  arrow_white_up.y = 420;
+  arrow_white_up.y = 400;
   container.addChild(arrow_white_up);
   arrow_red_up = new PIXI.Sprite(resources.obj_5_data.texture);
   arrow_red_up.scale.x = arrow_red_up.scale.y = 0.5;
   arrow_red_up.angle = -90;
   arrow_red_up.x = 410;
-  arrow_red_up.y = 420;
+  arrow_red_up.y = 400;
   arrow_red_up.visible = false;
   container.addChild(arrow_red_up);
   // right
   arrow_white_right = new PIXI.Sprite(resources.obj_4_data.texture);
   arrow_white_right.scale.x = arrow_white_right.scale.y = 0.5;
   arrow_white_right.x = 450;
-  arrow_white_right.y = 420;
+  arrow_white_right.y = 400;
   container.addChild(arrow_white_right);
   arrow_red_right = new PIXI.Sprite(resources.obj_5_data.texture);
   arrow_red_right.scale.x = arrow_red_right.scale.y = 0.5;
   arrow_red_right.x = 450;
-  arrow_red_right.y = 420;
+  arrow_red_right.y = 400;
   arrow_red_right.visible = false;
   container.addChild(arrow_red_right);
   // down
@@ -673,13 +672,13 @@ const gameSetup = (resources: any): void => {
   arrow_white_down.scale.x = arrow_white_down.scale.y = 0.5;
   arrow_white_down.angle = 90;
   arrow_white_down.x = 450;
-  arrow_white_down.y = 460;
+  arrow_white_down.y = 440;
   container.addChild(arrow_white_down);
   arrow_red_down = new PIXI.Sprite(resources.obj_5_data.texture);
   arrow_red_down.scale.x = arrow_red_down.scale.y = 0.5;
   arrow_red_down.angle = 90;
   arrow_red_down.x = 450;
-  arrow_red_down.y = 460;
+  arrow_red_down.y = 440;
   arrow_red_down.visible = false;
   container.addChild(arrow_red_down);
 
