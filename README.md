@@ -15,7 +15,7 @@ PixiJS v4.5.5 -> v6.0.2
 JavaScript -> TypeScript  
 add webpack  
 add sound  
-add GSAP  
+add GSAP with PixiPlugin  
 
 goldfire / howler.js  
 [https://github.com/goldfire/howler.js](https://github.com/goldfire/howler.js)  
@@ -28,3 +28,18 @@ Use 草原の小鳥.mp3
 [https://www.brainstorm-inc.jp/](https://www.brainstorm-inc.jp/)  
 Use 8bitgame_001.wav  
 Use 8bitgame_300.wav  
+
+PixiPlugin Docs - GreenSock  
+[https://greensock.com/docs/v3/Plugins/PixiPlugin](https://greensock.com/docs/v3/Plugins/PixiPlugin)  
+>Be sure to include the PixiPlugin correctly:  
+```
+import * as PIXI from "pixi.js";a
+import { gsap } from "gsap";
+import { PixiPlugin } from "gsap/PixiPlugin";
+
+// register the plugin
+gsap.registerPlugin(PixiPlugin);
+
+// give the plugin a reference to the PIXI object
+PixiPlugin.registerPIXI(PIXI);
+```
