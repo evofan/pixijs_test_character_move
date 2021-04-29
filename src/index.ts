@@ -12,6 +12,12 @@ import Stats from "stats.js";
 import { Howl, Howler } from "howler"; // npm install --save @types/howler
 import { gsap, TimelineMax, TweenMax } from "gsap"; // npm install -D @types/gsap
 
+import { PixiPlugin } from "gsap/PixiPlugin";
+// register the plugin
+gsap.registerPlugin(PixiPlugin);
+// give the plugin a reference to the PIXI object
+PixiPlugin.registerPIXI(PIXI);
+
 console.log(PIXI);
 
 // stats
@@ -369,16 +375,17 @@ const gameEnd = (): void => {
   // gameScene.visible = false;
   gameOverScene.visible = false;
   gameClearScene.visible = true;
-  // create a new timeline instance
-  let tl: TimelineMax = new TimelineMax();
-  // the following two lines do the SAME thing:
-  message_gameclear.x = 0;
-  tl.add(
-    TweenMax.to(message_gameclear, 1, {
-      x: WIDTH / 2 - message_gameclear.width / 2,
-    })
-  );
-  // tl.to(umbrella, 2, { x: 300 }); // shorter syntax!
+
+  // message_gameclear.x = WIDTH / 2 - message_gameclear.width / 2 + 100;
+  // message_gameclear.alpha = 0;
+  gsap.to(message_gameclear, {
+    duration: 1.5,
+    // x: WIDTH / 2 - message_gameclear.width / 2 + 100,
+    alpha: 1.0,
+    ease: "power4.easeout",
+    pixi: { scaleX: 1, scaleY: 1 },
+    // onComplete:
+  });
 };
 
 /**
@@ -390,11 +397,6 @@ const gameOver = (): void => {
   gameScene.visible = false;
   gameOverScene.visible = true;
   gameClearScene.visible = false;
-  // create a new timeline instance
-  //let tl: TimelineMax = new TimelineMax();
-  // the following two lines do the SAME thing:
-  //tl.add(TweenMax.to(message_gameover, 2, { scaleX: 3, scaleY: 3 }));
-  // tl.to(umbrella, 2, { x: 300 }); // shorter syntax!
 };
 
 /**
@@ -545,8 +547,12 @@ const gameSetup = (resources: any): void => {
   gameOverScene.addChild(message_gameover);
 
   message_gameclear = new PIXI.Text("Game Clear!", style);
-  message_gameclear.x = WIDTH / 2 - message_gameclear.width / 2;
-  message_gameclear.y = HEIGHT / 2 - message_gameclear.height;
+  message_gameclear.x = WIDTH / 2; //WIDTH / 2 - message_gameclear.width;
+  message_gameclear.y = HEIGHT / 2; // - message_gameclear.height;
+  message_gameclear.anchor.set(0.5, 0.5);
+  message_gameclear.scale.x = 0.5;
+  message_gameclear.scale.y = 0.5;
+  message_gameclear.alpha = 0;
   gameClearScene.addChild(message_gameclear);
 
   console.log(resources.obj_6_data.url);
