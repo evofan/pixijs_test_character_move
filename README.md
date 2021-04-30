@@ -1,6 +1,6 @@
 # Test to move character with cursor key, on pixijs.
 
-<img src="https://evofan.github.io/pixijs_test_character_move/screenshot/pic_screenshot2.jpg" width="50%">  
+<img src="https://evofan.github.io/pixijs_test_character_move/screenshot/pic_screenshot3.jpg" width="50%">  
 
 Demo  
 [https://evofan.github.io/pixijs_test_character_move/dist/](https://evofan.github.io/pixijs_test_character_move/dist/)  
@@ -33,7 +33,7 @@ PixiPlugin Docs - GreenSock
 [https://greensock.com/docs/v3/Plugins/PixiPlugin](https://greensock.com/docs/v3/Plugins/PixiPlugin)  
 >Be sure to include the PixiPlugin correctly:  
 ```
-import * as PIXI from "pixi.js";a
+import * as PIXI from "pixi.js";
 import { gsap } from "gsap";
 import { PixiPlugin } from "gsap/PixiPlugin";
 
@@ -43,3 +43,5 @@ gsap.registerPlugin(PixiPlugin);
 // give the plugin a reference to the PIXI object
 PixiPlugin.registerPIXI(PIXI);
 ```
+PIXI.Sprite - PixiJS API Documentation  
+[https://pixijs.download/dev/docs/PIXI.Sprite.html](https://pixijs.download/dev/docs/PIXI.Sprite.html)  
