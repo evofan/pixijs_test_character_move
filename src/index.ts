@@ -10,7 +10,7 @@ import { contain } from "./helper/contain";
 import { hitTestRectangle } from "./helper/hitTestRectangle";
 import Stats from "stats.js";
 import { Howl, Howler } from "howler"; // npm install --save @types/howler
-import { gsap, TimelineMax, TweenMax } from "gsap"; // npm install -D @types/gsap
+import { gsap } from "gsap"; // npm install -D @types/gsap
 
 import { PixiPlugin } from "gsap/PixiPlugin";
 // register the plugin
@@ -83,6 +83,9 @@ const ASSET_OBJ6: string = ASSETS.ASSET_OBJ6;
 const ASSET_OBJ7: string = ASSETS.ASSET_OBJ7;
 const ASSET_OBJ8: string = ASSETS.ASSET_OBJ8;
 
+const ASSET_OBJ9: string = ASSETS.ASSET_OBJ9;
+const ASSET_OBJ10: string = ASSETS.ASSET_OBJ10;
+
 // container
 let container: PIXI.Container = new PIXI.Container();
 container.width = WIDTH;
@@ -92,7 +95,7 @@ container.y = 0;
 container.pivot.x = 0.5;
 container.pivot.y = 0.5;
 container.interactive = false;
-container.interactiveChildren = false;
+container.interactiveChildren = true;
 container.buttonMode = false;
 stage.addChild(container);
 
@@ -143,7 +146,13 @@ let arrow_white_left: PIXI.Sprite,
   arrow_red_right: PIXI.Sprite,
   arrow_red_down: PIXI.Sprite;
 
-// sound
+// bgm button
+let bt_bgm_on: PIXI.Sprite;
+let bt_bgm_off: PIXI.Sprite;
+let bgmFlag: boolean = false;
+let sound_bgm: Howl;
+
+// se
 let se1: Howl;
 let se1Flag: boolean = true;
 let se2: Howl;
@@ -153,7 +162,8 @@ let se2Flag: boolean = true;
 let text_libVersion: PIXI.Text,
   text_description: PIXI.Text,
   text_message: PIXI.Text,
-  text_fps: PIXI.Text;
+  text_fps: PIXI.Text,
+  text_bgm: PIXI.Text;
 
 if (ASSET_BG === "") {
   console.log("Don't use background image.");
@@ -170,6 +180,9 @@ loader.add("obj_5_data", ASSET_OBJ5);
 loader.add("obj_6_data", ASSET_OBJ6);
 loader.add("obj_7_data", ASSET_OBJ7);
 loader.add("obj_8_data", ASSET_OBJ8);
+
+loader.add("obj_9_data", ASSET_OBJ9);
+loader.add("obj_10_data", ASSET_OBJ10);
 
 loader.load((loader: PIXI.Loader, resources: any) => {
   console.log(loader);
@@ -189,51 +202,29 @@ loader.onError.add(() => {
   throw Error("load error ...");
 });
 
-// 私はあなたが今あなたがゲームを作り始めるのに必要なすべてのスキルを持っているとあなたに言いました。
-// 何？ あなたは私を信じていませんか？ それを証明しましょう！
-// トレジャーハンターと呼ばれる単純なオブジェクトコレクションと敵の回避ゲームの作り方を詳しく見てみましょう。
-// （examplesフォルダにあります）
+// I told you you now have all the skills you need to start making games.
+// what? Don't you believe me? Let's prove it!
+// Let's take a closer look at how to create a simple object collection called Treasure Hunter and an enemy avoidance game.
+// (located in the examples folder)
 
-// トレジャーハンターは、これまでに学んだツールを使用して作成できる最も簡単な完成ゲームの1つの好例です。
-// キーボードの矢印キーを使って、探検家が宝物を見つけて出口まで運んでください。
-// 6つのブロブモンスターがダンジョンの壁の間を上下に移動し、探検家にぶつかると半透明になり、右上隅のヘルスメーターが縮小します。
-// すべての健康状態が使い果たされると、ステージに「You Lost！」と表示されます。
-// 探検家が宝物のある出口にたどり着くと、「You Won！」と表示されます。
+// Treasure Hunter is a good example of one of the simplest completed games you can create using the tools you've learned so far.
+// Use the arrow keys on your keyboard to help the explorer find the treasure and bring it to the exit.
+// Six blob monsters move up and down between the walls of the dungeon, becoming translucent when hitting an explorer, and shrinking the scale in the upper right corner.
+// When all health conditions are exhausted, the stage will display "You Lost!".
+// When the explorer reaches the exit with the treasure, "You Won!" Is displayed.
 
-// これは基本的なプロトタイプですが、トレジャーハンターには、より大きなゲームで見つけることができるほとんどの要素が含まれています。
-// テクスチャアトラスグラフィック、インタラクティブ機能、衝突、複数のゲームシーンなどです。
-// 自分のゲームの開始点として使用できるように、ゲームがどのようにまとめられたかを見ていきましょう。
-
-// The code structure（コードの構築方法）
-
-// treasureHunter.htmlファイルを開くと、すべてのゲームコードが1つの大きなファイルにまとめられていることがわかります。
-// これは、すべてのコードがどのように編成されているかを俯瞰したものです。
-
-// Pixiをセットアップし、テクスチャアトラスファイルをロードします - ロードされたときに `setup`関数を呼び出します
-/*
-  function setup() {
-    // ゲームスプライトを初期化し、ゲームの `state`を` play`に設定して 'gameLoop'を起動します
-  }
-
-  function gameLoop(delta) {
-    // 現在のゲームの状態をループで実行し、スプライトをレンダリングします。
-  }
-
-  function play(delta) {
-    // すべてのゲームロジックはここにあります
-  }
-
-  function end() {
-    // ゲーム終了時に実行されるべきすべてのコードがあります。
-  }
-  */
-
-// 各セクションがどのように機能するかを見ながら、これをゲームの世界地図として使用します。
+// This is a basic prototype, but the treasure hunter contains most of the elements you can find in larger games.
+// Texture atlas graphics, interactive features, collisions, multiple game scenes and more.
+// Let's see how the game was organized so that it could be used as a starting point for your game.
 
 // function
+
+/**
+ * Runs the current game state in a loop and renders the sprite.
+ * @param delta
+ */
 const gameLoop = (delta: number): void => {
   // console.log("gameLoop()", delta);
-  // 現在のゲームの状態をループで実行し、スプライトをレンダリングします。
 
   // Use the explorer's velocity to make it move
   explorer.x += explorer_vx;
@@ -250,63 +241,51 @@ const gameLoop = (delta: number): void => {
   // Set `explorerHit` to `false` before checking for a collision
   let explorerHit: boolean = false;
 
-  // play()関数はまた、ブロブモンスターを移動させ、それらをダンジョンの壁の中に閉じ込めたままにし、
-  // そしてそれぞれのプレイヤーとの衝突をチェックします。
-  // ブロブがダンジョンの上壁または下壁にぶつかると、方向が逆になります。
-  // これはすべて、毎フレームでBLOB配列内のBLOBスプライトのそれぞれを繰り返すforEach()ループを使用して行われます。
-
+  // Move the blob monsters and keep them trapped inside the dungeon wall,
+  // Then check for conflicts with each player.
+  // If the blob hits the top or bottom wall of the dungeon, the direction will be reversed.
+  // All this is done using a forEach() loop that repeats each of the blob sprites in the blob array every frame.
   //blobs.forEach((blob, idx) => {
   blobs.map((blob, idx) => {
-    // ブロブを移動する
+    // Move the blob.
     blob.y += blob_vy[idx];
 
-    // BLOBのスクリーン上の境界をチェックする
-    let blobHitsWall = contain(blob, {
+    // Check the on-screen boundaries of blobs.
+    let blobHitsWall: string | undefined = contain(blob, {
       x: BOUNDARY_RANGE_X,
       y: BOUNDARY_RANGE_Y,
       width: BOUNDARY_RANGE_WIDTH,
       height: BOUNDARY_RANGE_HEIGHT,
     });
+    // This code shows how to use the return value of the contain () function to reflect the blob from the wall.
+    // A variable called blobHitsWall is used to get the return value.
 
-    // ブロブがステージの上または下に当たった場合は、方向を逆にします
+    // If the blob hits above or below the stage, reverse the direction.
     if (blobHitsWall === "top" || blobHitsWall === "bottom") {
       blob_vy[idx] *= -1;
     }
+    // blobHitsWall is usually undefined.
+    // However, if the blob hits the upper wall, the value of blobHitsWall will be "top".
+    // If the blob hits the bottom wall, the blobHitsWall will have a value of "bottom".
+    // If any of these cases apply, you can reverse the blob direction by reversing the speed.
 
-    // 衝突をテストします。 いずれかの敵が探検家に触れている場合は、`explorerHit`を` true`に設定します。
+    // Multiply the blob's vy (vertical velocity) value by -1 to invert its direction of movement.
+
+    // Test for collisions. If any enemy is touching the explorer, set `explorer Hit` to` true`.
     if (hitTestRectangle(explorer, blob)) {
       explorerHit = true;
     }
   });
 
-  //  このコードでは、contain()関数の戻り値を使用してBLOBを壁から反射させる方法がわかります。
-  // 戻り値を取得するためにblobHitsWallという変数が使用されます。
-
-  // let blobHitsWall = contain(blob, { x: 28, y: 10, width: 488, height: 480 });
-
-  // blobHitsWallは通常undefinedです。
-  // しかし、ブロブが上の壁に当たった場合、blobHitsWallの値は"top"になります。
-  // ブロブが底壁に当たった場合、blobHitsWallは "bottom"という値になります。
-  // これらのケースのいずれかが当てはまる場合は、速度を逆にすることでブロブの方向を逆にすることができます。
-  // これを行うコードは次のとおりです。
-
-  /*
-  if (blobHitsWall === "top" || blobHitsWall === "bottom") {
-    blob.vy *= -1;
-  }
-  */
-
-  // ブロブのvy（vertical velocity：垂直速度）値に-1を掛けると、その移動方向が反転します。
-
-  // hitTestRectangle()がtrueを返す場合、それは衝突があったことを意味し、explorerHitという変数がtrueに設定されます。
-  // explorerHitがtrueの場合、play()関数は探検家を半透明にし、体力バーの幅を1ピクセル縮小します。
-
+  // If hitTestRectangle () returns true, it means there was a collision and the variable explorerHit is set to true.
+  // If explorerHit is true, make the explorer translucent and reduce the width of the health bar by 1 pixel.
   if (explorerHit) {
     // Make the explorer translucent
     explorer.alpha = 0.5;
 
+    // se
     se1.stop();
-    se1.play(); // 開始後に少し空白があるのでトル
+    se1.play();
 
     // hp bar minus
     outerBar.width -= 1;
@@ -318,11 +297,9 @@ const gameLoop = (delta: number): void => {
     explorer.alpha = 1;
   }
 
-  // explorerHitがfalseの場合、冒険家のalphaプロパティは1に維持され、完全に不透明（のまま）になります。
-
-  // play()関数はまた宝箱と探検家間の衝突をチェックします。
-  // ヒットした場合、宝物はわずかにオフセットされた状態で探索者探検家の位置に設定されます。
-  // これはそれが探検家が宝物を運んでいるように見えます。
+  // Check for clashes between the treasure chest and the explorer.
+  // If hit, the treasure will be set to the explorer explorer position with a slight offset.
+  // This makes it look like an explorer is carrying a treasure.
 
   // Check for a collision between the explorer and the treasure
   if (hitTestRectangle(explorer, treasure)) {
@@ -338,7 +315,7 @@ const gameLoop = (delta: number): void => {
   // Does the explorer have enough health? If the width of the `innerBar`
   // is less than zero, end the game and display "You lost!"
   if (outerBar.width <= 0) {
-    gameState = "end";
+    gameState = "gameover";
     gameOver();
     // message.text = "You lost!";
   }
@@ -346,31 +323,17 @@ const gameLoop = (delta: number): void => {
   // If the explorer has brought the treasure to the exit,
   // end the game and display "You won!"
   if (hitTestRectangle(treasure, door)) {
-    gameState = "end";
+    gameState = "gameclear";
     // message.text = "You won!";
-    gameEnd();
+    gameClear();
   }
 };
 
-const gamePlay = (): void => {
-  console.log("gamePlay()");
-  // すべてのゲームロジックはここにあります
-
-  // 探検家を動かし、それをダンジョンの中に閉じ込めます
-  // ブロブモンスターを動かします
-  // ブロブと探検家の間の衝突をチェックします
-  // 探検家と宝物の間の衝突をチェックします
-  // 宝物とドアの間の衝突をチェックします
-  // ゲームが勝ったか負けたかを決めます
-  // ゲームが終了したら、ゲームの「状態」を「終了」に変更します。
-  //}
-};
-
 /**
- * I have all the code that should be executed at the end of the game.
+ * I have all the code that should be executed at the clear of the game.
  */
-const gameEnd = (): void => {
-  console.log("gameEnd()");
+const gameClear = (): void => {
+  console.log("gameClear()");
   gameLoopFlag = false;
   // gameScene.visible = false;
   gameOverScene.visible = false;
@@ -379,7 +342,7 @@ const gameEnd = (): void => {
   // message_gameclear.x = WIDTH / 2 - message_gameclear.width / 2 + 100;
   // message_gameclear.alpha = 0;
   gsap.to(message_gameclear, {
-    duration: 1.5,
+    duration: 0.5,
     // x: WIDTH / 2 - message_gameclear.width / 2 + 100,
     alpha: 1.0,
     ease: "power4.easeout",
@@ -389,7 +352,7 @@ const gameEnd = (): void => {
 };
 
 /**
- * I have all the code that should be executed at the end of the game.
+ * I have all the code that should be executed at the end of the game(game over).
  */
 const gameOver = (): void => {
   console.log("gameOver()");
@@ -415,10 +378,12 @@ const gameSetup = (resources: any): void => {
   container.addChild(gameScene);
   gameScene.x = 0;
   gameScene.y = 0;
+  gameScene.interactiveChildren = true;
 
   // Create a `gameOverScene` group
   container.addChild(gameOverScene);
   gameOverScene.visible = false;
+  gameOverScene.interactiveChildren = true;
 
   container.addChild(gameClearScene);
   gameClearScene.visible = false;
@@ -560,7 +525,7 @@ const gameSetup = (resources: any): void => {
   // 6. SOUND
 
   // bgm test
-  let sound_bgm: Howl = new Howl({
+  sound_bgm = new Howl({
     src: [resources.obj_6_data.url],
     autoplay: false, // The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu
     loop: true,
@@ -599,14 +564,14 @@ const gameSetup = (resources: any): void => {
   // text
   let offset: number = 10;
 
-  // text version
+  // text pixi version
   let version: string = `PixiJS: ver.${PIXI.VERSION}`;
   text_libVersion = setText(version, "Arial", 16, 0xf0fff0, "left", "normal");
   container.addChild(text_libVersion);
   text_libVersion.x = WIDTH - text_libVersion.width - offset;
   text_libVersion.y = HEIGHT - text_libVersion.height - 5;
 
-  // text description
+  // text game title
   let description: string = "Treature Hunter";
   text_description = setText(
     description,
@@ -625,7 +590,7 @@ const gameSetup = (resources: any): void => {
   text_description.x = WIDTH / 2 - text_description.width / 2;
   text_description.y = HEIGHT - text_description.height;
 
-  // text message
+  // text HP:
   let message_navi: string = "HP:";
   text_message = setText(
     message_navi,
@@ -644,11 +609,29 @@ const gameSetup = (resources: any): void => {
   text_message.x = 305;
   text_message.y = 5;
 
-  // text fps
+  // text FPS
   text_fps = setText(`FPS: ${fps}`, "Impact", 16, 0xf0fff0, "left", "normal");
   container.addChild(text_fps);
   text_fps.x = offset;
   text_fps.y = HEIGHT - text_fps.height - 5;
+
+  // text BGM:
+  text_bgm = setText(
+    "BGM:",
+    "Arial",
+    16,
+    0xff9900,
+    "center",
+    "bold",
+    "#000000",
+    5,
+    false,
+    "#666666",
+    "round"
+  );
+  container.addChild(text_bgm);
+  text_bgm.x = 205;
+  text_bgm.y = 5;
 
   // navigation arrow
   // left
@@ -705,6 +688,71 @@ const gameSetup = (resources: any): void => {
   arrow_red_down.y = 440;
   arrow_red_down.visible = false;
   container.addChild(arrow_red_down);
+
+  // navigation bgm button
+  // on
+  bt_bgm_on = new PIXI.Sprite(resources.obj_9_data.texture);
+  bt_bgm_on.scale.x = bt_bgm_on.scale.y = 0.25;
+  bt_bgm_on.x = 258;
+  bt_bgm_on.y = 5;
+  bt_bgm_on.visible = false;
+  container.addChild(bt_bgm_on);
+  bt_bgm_on.interactive = true;
+  bt_bgm_on.buttonMode = true;
+  bt_bgm_on.interactiveChildren = true;
+  // off
+  bt_bgm_off = new PIXI.Sprite(resources.obj_10_data.texture);
+  bt_bgm_off.scale.x = bt_bgm_off.scale.y = 0.25;
+  bt_bgm_off.x = 258;
+  bt_bgm_off.y = 5;
+  container.addChild(bt_bgm_off);
+  bt_bgm_off.interactive = true;
+  bt_bgm_off.buttonMode = true;
+  bt_bgm_off.interactiveChildren = true;
+
+  bt_bgm_on.on("tap", (event: MouseEvent) => {
+    // handle event
+    console.log("bgm_on tap!");
+    offBGM();
+  });
+  bt_bgm_on.on("click", (event: MouseEvent) => {
+    // handle event
+    console.log("bgm_on click!");
+    offBGM();
+  });
+
+  bt_bgm_off.on("tap", (event: MouseEvent) => {
+    // handle event
+    console.log("bgm_off tap!");
+    onBGM();
+  });
+  bt_bgm_off.on("click", (event: MouseEvent) => {
+    // handle event
+    console.log("bgm_off click!");
+    onBGM();
+  });
+
+  const onBGM = () => {
+    if (bgmFlag === false) {
+      bgmFlag = true;
+      sound_bgm.play();
+      bt_bgm_on.visible = true;
+      bt_bgm_on.interactive = true;
+      bt_bgm_off.visible = false;
+      bt_bgm_off.interactive = false;
+    }
+  };
+
+  const offBGM = () => {
+    if (bgmFlag) {
+      bgmFlag = false;
+      sound_bgm.stop();
+      bt_bgm_on.visible = false;
+      bt_bgm_on.interactive = false;
+      bt_bgm_off.visible = true;
+      bt_bgm_off.interactive = true;
+    }
+  };
 
   // Subscribe Cursor Key
   const left = keyboard(37),
