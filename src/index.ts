@@ -13,6 +13,7 @@ import { Howl, Howler } from "howler"; // npm install --save @types/howler
 import { gsap } from "gsap"; // npm install -D @types/gsap
 
 import { PixiPlugin } from "gsap/PixiPlugin";
+
 // register the plugin
 gsap.registerPlugin(PixiPlugin);
 // give the plugin a reference to the PIXI object
@@ -335,15 +336,13 @@ const gameLoop = (delta: number): void => {
 const gameClear = (): void => {
   console.log("gameClear()");
   gameLoopFlag = false;
+  sound_bgm.stop();
   // gameScene.visible = false;
   gameOverScene.visible = false;
   gameClearScene.visible = true;
 
-  // message_gameclear.x = WIDTH / 2 - message_gameclear.width / 2 + 100;
-  // message_gameclear.alpha = 0;
   gsap.to(message_gameclear, {
     duration: 0.5,
-    // x: WIDTH / 2 - message_gameclear.width / 2 + 100,
     alpha: 1.0,
     ease: "power4.easeout",
     pixi: { scaleX: 1, scaleY: 1 },
@@ -501,7 +500,7 @@ const gameSetup = (resources: any): void => {
   // When the game is over, you will see the text "You won" or "You lost" depending on the result of the game.
   // This is done by using a text sprite and adding it to the gameOverScene.
   // This text will not be displayed because the visible property of gameOverScene is set to false at the start of the game.
-  let style = new PIXI.TextStyle({
+  let style: PIXI.TextStyle = new PIXI.TextStyle({
     fontFamily: "Futura",
     fontSize: 64,
     fill: "white",
@@ -713,26 +712,26 @@ const gameSetup = (resources: any): void => {
   bt_bgm_on.on("tap", (event: MouseEvent) => {
     // handle event
     console.log("bgm_on tap!");
-    offBGM();
+    stopBGM();
   });
   bt_bgm_on.on("click", (event: MouseEvent) => {
     // handle event
     console.log("bgm_on click!");
-    offBGM();
+    stopBGM();
   });
 
   bt_bgm_off.on("tap", (event: MouseEvent) => {
     // handle event
     console.log("bgm_off tap!");
-    onBGM();
+    playBGM();
   });
   bt_bgm_off.on("click", (event: MouseEvent) => {
     // handle event
     console.log("bgm_off click!");
-    onBGM();
+    playBGM();
   });
 
-  const onBGM = () => {
+  const playBGM = () => {
     if (bgmFlag === false) {
       bgmFlag = true;
       sound_bgm.play();
@@ -743,7 +742,7 @@ const gameSetup = (resources: any): void => {
     }
   };
 
-  const offBGM = () => {
+  const stopBGM = () => {
     if (bgmFlag) {
       bgmFlag = false;
       sound_bgm.stop();
@@ -755,10 +754,26 @@ const gameSetup = (resources: any): void => {
   };
 
   // Subscribe Cursor Key
-  const left = keyboard(37),
-    up = keyboard(38),
-    right = keyboard(39),
-    down = keyboard(40);
+  const left: {
+    press: Function;
+    release: Function;
+    isDown: Function;
+  } = keyboard(37);
+  const up: {
+    press: Function;
+    release: Function;
+    isDown: Function;
+  } = keyboard(38);
+  const right: {
+    press: Function;
+    release: Function;
+    isDown: Function;
+  } = keyboard(39);
+  const down: {
+    press: Function;
+    release: Function;
+    isDown: Function;
+  } = keyboard(40);
 
   // Left Cursor Key
   left.press = () => {
