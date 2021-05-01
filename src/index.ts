@@ -36,6 +36,9 @@ const BOUNDARY_RANGE_Y: number = 10;
 const BOUNDARY_RANGE_WIDTH: number = 488;
 const BOUNDARY_RANGE_HEIGHT: number = 488;
 
+const FIRST = 1;
+const NOT_FIRST = 2;
+
 // renderer
 const renderer: PIXI.Renderer = new PIXI.Renderer({
   width: WIDTH,
@@ -135,7 +138,8 @@ let numberOfBlobs: number = 6,
 // hp bar
 let healthBar: PIXI.Container = new PIXI.Container();
 let innerBar: PIXI.Graphics = new PIXI.Graphics();
-let outerBar = new PIXI.Graphics();
+let outerBar: PIXI.Graphics = new PIXI.Graphics();
+let maxHP: number = 120;
 
 // arrow for cursor-key use
 let arrow_white_left: PIXI.Sprite,
@@ -155,16 +159,16 @@ let sound_bgm: Howl;
 
 // se
 let se1: Howl;
-let se1Flag: boolean = true;
 let se2: Howl;
 let se2Flag: boolean = true;
 
 // text
-let text_libVersion: PIXI.Text,
-  text_description: PIXI.Text,
-  text_message: PIXI.Text,
+let text_pixiVersion: PIXI.Text,
+  text_gameTitle: PIXI.Text,
+  text_hp: PIXI.Text,
   text_fps: PIXI.Text,
   text_bgm: PIXI.Text;
+let text_hp_num: PIXI.Text;
 
 if (ASSET_BG === "") {
   console.log("Don't use background image.");
@@ -297,6 +301,9 @@ const gameLoop = (delta: number): void => {
     // If not hit, make the explorer completely opaque(non-transparent)
     explorer.alpha = 1;
   }
+
+  // hp num
+  setHpNum(NOT_FIRST);
 
   // Check for clashes between the treasure chest and the explorer.
   // If hit, the treasure will be set to the explorer explorer position with a slight offset.
@@ -480,18 +487,18 @@ const gameSetup = (resources: any): void => {
   // After that, the health bar will be added to the gameScene and placed on the stage.
 
   // Creating a health bar
-  healthBar.position.set(WIDTH - 170, 12);
+  healthBar.position.set(WIDTH - 140, 12);
   gameScene.addChild(healthBar);
 
   // Create a rectangle with a black background.
   innerBar.beginFill(0x000000);
-  innerBar.drawRect(0, 0, 129, 10);
+  innerBar.drawRect(0, 0, maxHP + 1, 10);
   innerBar.endFill();
   healthBar.addChild(innerBar);
 
   // Create a red rectangle on the front.
   outerBar.beginFill(0x990000);
-  outerBar.drawRect(0, 0, 128, 8);
+  outerBar.drawRect(0, 0, maxHP, 8);
   outerBar.endFill();
   healthBar.addChild(outerBar);
 
@@ -523,7 +530,7 @@ const gameSetup = (resources: any): void => {
 
   // 6. SOUND
 
-  // bgm test
+  // bgm
   sound_bgm = new Howl({
     src: [resources.obj_6_data.url],
     autoplay: false, // The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu
@@ -536,7 +543,7 @@ const gameSetup = (resources: any): void => {
   // sound_bgm.play();
   // Howler.volume(0.5);
 
-  // SE test
+  // SE
   se1 = new Howl({
     src: [resources.obj_7_data.url],
     autoplay: false,
@@ -544,7 +551,6 @@ const gameSetup = (resources: any): void => {
     volume: 0.2,
     onend: () => {
       console.log("SE1 finished.");
-      se1Flag = true;
     },
   });
 
@@ -565,15 +571,14 @@ const gameSetup = (resources: any): void => {
 
   // text pixi version
   let version: string = `PixiJS: ver.${PIXI.VERSION}`;
-  text_libVersion = setText(version, "Arial", 16, 0xf0fff0, "left", "normal");
-  container.addChild(text_libVersion);
-  text_libVersion.x = WIDTH - text_libVersion.width - offset;
-  text_libVersion.y = HEIGHT - text_libVersion.height - 5;
+  text_pixiVersion = setText(version, "Arial", 16, 0xf0fff0, "left", "normal");
+  container.addChild(text_pixiVersion);
+  text_pixiVersion.x = WIDTH - text_pixiVersion.width - offset;
+  text_pixiVersion.y = HEIGHT - text_pixiVersion.height - 5;
 
   // text game title
-  let description: string = "Treature Hunter";
-  text_description = setText(
-    description,
+  text_gameTitle = setText(
+    "Treature Hunter",
     "Arial",
     24,
     0xffd700,
@@ -585,14 +590,13 @@ const gameSetup = (resources: any): void => {
     "#666666",
     "round"
   );
-  container.addChild(text_description);
-  text_description.x = WIDTH / 2 - text_description.width / 2;
-  text_description.y = HEIGHT - text_description.height;
+  container.addChild(text_gameTitle);
+  text_gameTitle.x = WIDTH / 2 - text_gameTitle.width / 2;
+  text_gameTitle.y = HEIGHT - text_gameTitle.height;
 
   // text HP:
-  let message_navi: string = "HP:";
-  text_message = setText(
-    message_navi,
+  text_hp = setText(
+    "HP:",
     "Arial",
     16,
     0xff0033,
@@ -604,9 +608,12 @@ const gameSetup = (resources: any): void => {
     "#666666",
     "round"
   );
-  container.addChild(text_message);
-  text_message.x = 305;
-  text_message.y = 5;
+  container.addChild(text_hp);
+  text_hp.x = 305;
+  text_hp.y = 5;
+
+  // text hp-num
+  setHpNum(FIRST);
 
   // text FPS
   text_fps = setText(`FPS: ${fps}`, "Impact", 16, 0xf0fff0, "left", "normal");
@@ -710,23 +717,19 @@ const gameSetup = (resources: any): void => {
   bt_bgm_off.interactiveChildren = true;
 
   bt_bgm_on.on("tap", (event: MouseEvent) => {
-    // handle event
     console.log("bgm_on tap!");
     stopBGM();
   });
   bt_bgm_on.on("click", (event: MouseEvent) => {
-    // handle event
     console.log("bgm_on click!");
     stopBGM();
   });
 
   bt_bgm_off.on("tap", (event: MouseEvent) => {
-    // handle event
     console.log("bgm_off tap!");
     playBGM();
   });
   bt_bgm_off.on("click", (event: MouseEvent) => {
-    // handle event
     console.log("bgm_off click!");
     playBGM();
   });
@@ -856,3 +859,29 @@ const gameSetup = (resources: any): void => {
 // The game's helper functions:
 // 'keyboard', 'hitTestRectangle', 'contain', 'randomInt'
 // -> Externalization
+
+/**
+ * Show HP num
+ * @param e
+ */
+const setHpNum = (e: number) => {
+  if (e !== FIRST) {
+    container.removeChild(text_hp_num);
+  }
+  text_hp_num = setText(
+    Math.floor(outerBar.width),
+    "Arial",
+    16,
+    0xff0033,
+    "center",
+    "bold",
+    "#000000",
+    5,
+    false,
+    "#666666",
+    "round"
+  );
+  container.addChild(text_hp_num);
+  text_hp_num.x = 335;
+  text_hp_num.y = 5;
+};
