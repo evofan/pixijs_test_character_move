@@ -16,6 +16,7 @@ JavaScript -> TypeScript
 add webpack  
 add sound  
 add GSAP with PixiPlugin  
+add animated sprite  
 
 goldfire / howler.js  
 [https://github.com/goldfire/howler.js](https://github.com/goldfire/howler.js)  
@@ -45,3 +46,10 @@ PixiPlugin.registerPIXI(PIXI);
 ```
 PIXI.Sprite - PixiJS API Documentation  
 [https://pixijs.download/dev/docs/PIXI.Sprite.html](https://pixijs.download/dev/docs/PIXI.Sprite.html)  
+
+PIXI.AnimatedSprite - PixiJS API Documentation  
+[https://pixijs.download/dev/docs/PIXI.AnimatedSprite.html](https://pixijs.download/dev/docs/PIXI.AnimatedSprite.html)  
+
+Yuru Dorasil RPG Maker Material Providing Site  
+[http://yurudora.com/tkool/](http://yurudora.com/tkool/)  
+Use 5_field_20160915.zip  
