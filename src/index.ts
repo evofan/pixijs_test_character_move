@@ -13,6 +13,7 @@ import { Howl, Howler } from "howler"; // npm install --save @types/howler
 import { gsap } from "gsap"; // npm install -D @types/gsap
 
 import { PixiPlugin } from "gsap/PixiPlugin";
+import { AnimatedSprite, DisplayObject, Sprite } from "pixi.js";
 
 // register the plugin
 gsap.registerPlugin(PixiPlugin);
@@ -90,6 +91,10 @@ const ASSET_OBJ8: string = ASSETS.ASSET_OBJ8;
 const ASSET_OBJ9: string = ASSETS.ASSET_OBJ9;
 const ASSET_OBJ10: string = ASSETS.ASSET_OBJ10;
 
+const ASSET_OBJ11: string = ASSETS.ASSET_OBJ11;
+const ASSET_OBJ12: string = ASSETS.ASSET_OBJ12;
+const ASSET_OBJ13: string = ASSETS.ASSET_OBJ13;
+
 // container
 let container: PIXI.Container = new PIXI.Container();
 container.width = WIDTH;
@@ -151,6 +156,9 @@ let arrow_white_left: PIXI.Sprite,
   arrow_red_right: PIXI.Sprite,
   arrow_red_down: PIXI.Sprite;
 
+// dragon
+let dradon_anim: PIXI.Sprite;
+
 // bgm button
 let bt_bgm_on: PIXI.Sprite;
 let bt_bgm_off: PIXI.Sprite;
@@ -188,6 +196,10 @@ loader.add("obj_8_data", ASSET_OBJ8);
 
 loader.add("obj_9_data", ASSET_OBJ9);
 loader.add("obj_10_data", ASSET_OBJ10);
+
+loader.add("obj_11_data", ASSET_OBJ11);
+loader.add("obj_12_data", ASSET_OBJ12);
+loader.add("obj_13_data", ASSET_OBJ13);
 
 loader.load((loader: PIXI.Loader, resources: any) => {
   console.log(loader);
@@ -440,6 +452,49 @@ const gameSetup = (resources: any): void => {
   // Putting them together (dungeon, door, player, treasure chest) in a gameScene group makes
   // it easier to hide the gameScene and show the gameOverScene when the game is over.
 
+  // Animated sprite
+  let alienImages: string[] = [
+    "assets/images/pic_dragon_1.png",
+    "assets/images/pic_dragon_2.png",
+    "assets/images/pic_dragon_3.png",
+  ];
+
+  let textureArray: PIXI.Texture[] = [];
+
+  for (let i: number = 0; i < 3; i++) {
+    let texture: PIXI.Texture = PIXI.Texture.from(alienImages[i]);
+    textureArray.push(texture);
+  }
+
+  let anim: AnimatedSprite = new PIXI.AnimatedSprite(textureArray);
+  anim.x = 263;
+  anim.y = 190;
+  anim.anchor.set(0.5);
+  anim.animationSpeed = 0.1;
+  anim.loop = true;
+  // anim.tint = 0x000000;
+  anim.visible = true;
+  anim.play();
+  anim.onComplete = function () {
+    console.log("anim.totalFrames: ", anim.totalFrames);
+    console.log("animation end");
+    anim.interactive = true;
+  };
+  anim.interactive = true;
+  anim.on("click", (event: MouseEvent) => {
+    console.log("dragon click!");
+    anim.interactive = false;
+    // anim.animationSpeed = 0;
+    anim.loop = false;
+  });
+  anim.on("tap", (event: MouseEvent) => {
+    console.log("dragon tap!");
+    anim.interactive = false;
+    // anim.animationSpeed = 0;
+    anim.loop = false;
+  });
+  container.addChild(anim);
+
   // 3. CREATE MONSTER
 
   // Six blob (small chunks) monsters are created in one loop.
@@ -578,7 +633,7 @@ const gameSetup = (resources: any): void => {
 
   // text game title
   text_gameTitle = setText(
-    "Treature Hunter",
+    "Treasure Hunter",
     "Arial",
     24,
     0xffd700,
