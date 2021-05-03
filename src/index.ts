@@ -135,10 +135,13 @@ let explorer_vx: number = 0,
 let numberOfBlobs: number = 6,
   blobs: PIXI.Sprite[] = [],
   blob_spacing: number = 48,
-  blob_xOffset: number = 150,
+  blob_xOffset: number = 100,
   blob_speed: number = 2,
   blob_direction: number = 1,
   blob_vy: number[] = [];
+
+// dragon
+let dragon: AnimatedSprite;
 
 // hp bar
 let healthBar: PIXI.Container = new PIXI.Container();
@@ -257,6 +260,7 @@ const gameLoop = (delta: number): void => {
 
   // Set `explorerHit` to `false` before checking for a collision
   let explorerHit: boolean = false;
+  let explorerHitDragon: boolean = false;
 
   // Move the blob monsters and keep them trapped inside the dungeon wall,
   // Then check for conflicts with each player.
@@ -292,6 +296,11 @@ const gameLoop = (delta: number): void => {
     if (hitTestRectangle(explorer, blob)) {
       explorerHit = true;
     }
+
+    // explorer hit for dragon
+    if (hitTestRectangle(explorer, dragon)) {
+      explorerHitDragon = true;
+    }
   });
 
   // If hitTestRectangle () returns true, it means there was a collision and the variable explorerHit is set to true.
@@ -312,6 +321,21 @@ const gameLoop = (delta: number): void => {
   } else {
     // If not hit, make the explorer completely opaque(non-transparent)
     explorer.alpha = 1;
+  }
+
+  if (explorerHitDragon) {
+    explorer.alpha = 0.5;
+    // se
+    se1.stop();
+    se1.play();
+    // hp bar minus
+    outerBar.width -= 50;
+    if (outerBar.width < 0) {
+      outerBar.width = 0;
+    } else {
+      // If not hit, make the explorer completely opaque(non-transparent)
+      explorer.alpha = 1;
+    }
   }
 
   // hp num
@@ -356,6 +380,7 @@ const gameClear = (): void => {
   console.log("gameClear()");
   gameLoopFlag = false;
   sound_bgm.stop();
+  dragon.stop();
   // gameScene.visible = false;
   gameOverScene.visible = false;
   gameClearScene.visible = true;
@@ -437,7 +462,7 @@ const gameSetup = (resources: any): void => {
 
   // Create the `player(explorer)` sprite
   explorer = new PIXI.Sprite(id["explorer.png"]);
-  explorer.x = 68;
+  explorer.x = 38; //68;
   explorer.y = gameScene.height / 2 - explorer.height / 2;
   explorer_vx = 0;
   explorer_vy = 0;
@@ -445,15 +470,15 @@ const gameSetup = (resources: any): void => {
 
   // Create the `treasure` sprite
   treasure = new PIXI.Sprite(id["treasure.png"]);
-  treasure.x = gameScene.width - treasure.width - 48;
+  treasure.x = gameScene.width - treasure.width - 38;
   treasure.y = gameScene.height / 2 - treasure.height / 2;
   gameScene.addChild(treasure);
 
   // Putting them together (dungeon, door, player, treasure chest) in a gameScene group makes
   // it easier to hide the gameScene and show the gameOverScene when the game is over.
 
-  // Animated sprite
-  let alienImages: string[] = [
+  // Create Animated sprite
+  let dragonImages: string[] = [
     "assets/images/pic_dragon_1.png",
     "assets/images/pic_dragon_2.png",
     "assets/images/pic_dragon_3.png",
@@ -462,38 +487,38 @@ const gameSetup = (resources: any): void => {
   let textureArray: PIXI.Texture[] = [];
 
   for (let i: number = 0; i < 3; i++) {
-    let texture: PIXI.Texture = PIXI.Texture.from(alienImages[i]);
+    let texture: PIXI.Texture = PIXI.Texture.from(dragonImages[i]);
     textureArray.push(texture);
   }
 
-  let anim: AnimatedSprite = new PIXI.AnimatedSprite(textureArray);
-  anim.x = 263;
-  anim.y = 190;
-  anim.anchor.set(0.5);
-  anim.animationSpeed = 0.1;
-  anim.loop = true;
+  dragon = new PIXI.AnimatedSprite(textureArray);
+  dragon.x = 410;
+  dragon.y = 180;
+  dragon.anchor.set(0.5);
+  dragon.animationSpeed = 0.1;
+  dragon.loop = true;
   // anim.tint = 0x000000;
-  anim.visible = true;
-  anim.play();
-  anim.onComplete = function () {
-    console.log("anim.totalFrames: ", anim.totalFrames);
+  dragon.visible = true;
+  dragon.play();
+  dragon.onComplete = function () {
+    console.log("anim.totalFrames: ", dragon.totalFrames);
     console.log("animation end");
-    anim.interactive = true;
+    dragon.interactive = true;
   };
-  anim.interactive = true;
-  anim.on("click", (event: MouseEvent) => {
+  dragon.interactive = true;
+  dragon.on("click", (event: MouseEvent) => {
     console.log("dragon click!");
-    anim.interactive = false;
+    dragon.interactive = false;
     // anim.animationSpeed = 0;
-    anim.loop = false;
+    dragon.loop = false;
   });
-  anim.on("tap", (event: MouseEvent) => {
+  dragon.on("tap", (event: MouseEvent) => {
     console.log("dragon tap!");
-    anim.interactive = false;
+    dragon.interactive = false;
     // anim.animationSpeed = 0;
-    anim.loop = false;
+    dragon.loop = false;
   });
-  container.addChild(anim);
+  gameScene.addChild(dragon);
 
   // 3. CREATE MONSTER
 
@@ -522,6 +547,11 @@ const gameSetup = (resources: any): void => {
     // direction can be either 1 or -1.
     // "1" means the enemy moves down, "-1" means the blob moves up.
     // Multiply `direction` by` speed` to determine the vertical direction of the blob.
+
+    // org
+    // blob_vy[i] = blob_speed * blob_direction;
+    // random speed
+    blob_speed = Math.floor(Math.random() * 3) + 1;
     blob_vy[i] = blob_speed * blob_direction;
 
     // Reverse the direction of the next blob.
