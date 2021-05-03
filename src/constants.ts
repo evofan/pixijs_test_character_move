@@ -21,6 +21,7 @@ export const ASSETS: {
   ASSET_OBJ11: string;
   ASSET_OBJ12: string;
   ASSET_OBJ13: string;
+  ASSET_OBJ14: string;
 } = {
   ASSET_BG: "assets/images/pic_bg_night.jpg",
   ASSET_OBJ1: "assets/images/cat.png",
@@ -35,7 +36,8 @@ export const ASSETS: {
   ASSET_OBJ10: "assets/images/pic_bgm_off.png",
   ASSET_OBJ11: "assets/images/pic_dragon_1.png",
   ASSET_OBJ12: "assets/images/pic_dragon_2.png",
-  ASSET_OBJ13: "assets/images/pic_dragon_3.png"
+  ASSET_OBJ13: "assets/images/pic_dragon_3.png",
+  ASSET_OBJ14: "assets/images/pic_dragon_fire.png"
   // TODO: load manifest file
 };
 

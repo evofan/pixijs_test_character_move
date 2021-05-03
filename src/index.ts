@@ -95,6 +95,8 @@ const ASSET_OBJ11: string = ASSETS.ASSET_OBJ11;
 const ASSET_OBJ12: string = ASSETS.ASSET_OBJ12;
 const ASSET_OBJ13: string = ASSETS.ASSET_OBJ13;
 
+const ASSET_OBJ14: string = ASSETS.ASSET_OBJ14;
+
 // container
 let container: PIXI.Container = new PIXI.Container();
 container.width = WIDTH;
@@ -142,6 +144,8 @@ let numberOfBlobs: number = 6,
 
 // dragon
 let dragon: AnimatedSprite;
+let dragonfire: AnimatedSprite;
+let dragonfireFlag: boolean = true;
 
 // hp bar
 let healthBar: PIXI.Container = new PIXI.Container();
@@ -158,9 +162,6 @@ let arrow_white_left: PIXI.Sprite,
   arrow_red_up: PIXI.Sprite,
   arrow_red_right: PIXI.Sprite,
   arrow_red_down: PIXI.Sprite;
-
-// dragon
-let dradon_anim: PIXI.Sprite;
 
 // bgm button
 let bt_bgm_on: PIXI.Sprite;
@@ -203,6 +204,7 @@ loader.add("obj_10_data", ASSET_OBJ10);
 loader.add("obj_11_data", ASSET_OBJ11);
 loader.add("obj_12_data", ASSET_OBJ12);
 loader.add("obj_13_data", ASSET_OBJ13);
+loader.add("obj_14_data", ASSET_OBJ14);
 
 loader.load((loader: PIXI.Loader, resources: any) => {
   console.log(loader);
@@ -261,6 +263,19 @@ const gameLoop = (delta: number): void => {
   // Set `explorerHit` to `false` before checking for a collision
   let explorerHit: boolean = false;
   let explorerHitDragon: boolean = false;
+  let explorerHitFire: boolean = false;
+
+  // easy test
+  let num: number = randomInt(1, 1000000000);
+  if (num > 995000000) {
+    console.log("995000000 over");
+    if (dragonfireFlag) {
+      dragonfireFlag = false;
+      dragonfire.visible = true;
+      dragonfire.animationSpeed = 0.01;
+      dragonfire.play();
+    }
+  }
 
   // Move the blob monsters and keep them trapped inside the dungeon wall,
   // Then check for conflicts with each player.
@@ -301,6 +316,11 @@ const gameLoop = (delta: number): void => {
     if (hitTestRectangle(explorer, dragon)) {
       explorerHitDragon = true;
     }
+
+    // explorer hit for dragonfire
+    if (hitTestRectangle(explorer, dragonfire)) {
+      explorerHitFire = true;
+    }
   });
 
   // If hitTestRectangle () returns true, it means there was a collision and the variable explorerHit is set to true.
@@ -330,6 +350,17 @@ const gameLoop = (delta: number): void => {
     se1.play();
     // hp bar minus
     outerBar.width -= 50;
+    if (outerBar.width < 0) {
+      outerBar.width = 0;
+    } else {
+      // If not hit, make the explorer completely opaque(non-transparent)
+      explorer.alpha = 1;
+    }
+  }
+  if (explorerHitFire && dragonfireFlag === false) {
+    explorer.alpha = 0.5;
+    // hp bar minus
+    outerBar.width -= 150;
     if (outerBar.width < 0) {
       outerBar.width = 0;
     } else {
@@ -381,6 +412,7 @@ const gameClear = (): void => {
   gameLoopFlag = false;
   sound_bgm.stop();
   dragon.stop();
+  dragonfire.stop();
   // gameScene.visible = false;
   gameOverScene.visible = false;
   gameClearScene.visible = true;
@@ -400,7 +432,10 @@ const gameClear = (): void => {
 const gameOver = (): void => {
   console.log("gameOver()");
   gameLoopFlag = false;
-  gameScene.visible = false;
+  sound_bgm.stop();
+  dragon.stop();
+  dragonfire.stop();
+  // gameScene.visible = false;
   gameOverScene.visible = true;
   gameClearScene.visible = false;
 };
@@ -493,14 +528,14 @@ const gameSetup = (resources: any): void => {
 
   dragon = new PIXI.AnimatedSprite(textureArray);
   dragon.x = 410;
-  dragon.y = 180;
+  dragon.y = 100;
   dragon.anchor.set(0.5);
   dragon.animationSpeed = 0.1;
   dragon.loop = true;
   // anim.tint = 0x000000;
   dragon.visible = true;
   dragon.play();
-  dragon.onComplete = function () {
+  dragon.onComplete = () => {
     console.log("anim.totalFrames: ", dragon.totalFrames);
     console.log("animation end");
     dragon.interactive = true;
@@ -519,6 +554,52 @@ const gameSetup = (resources: any): void => {
     dragon.loop = false;
   });
   gameScene.addChild(dragon);
+
+  // dragon fire
+  /*
+  dragonfire = new PIXI.Sprite(resources.obj_14_data.texture);
+  dragonfire.scale.x = dragonfire.scale.y = 0.5;
+  dragonfire.x = 391;
+  dragonfire.y = 100;
+  gameScene.addChild(dragonfire);
+  */
+
+  // dragon fire anim
+  let dragonfireImages: string[] = [
+    "assets/images/pic_dragon_fire_1.png",
+    "assets/images/pic_dragon_fire_2.png",
+    "assets/images/pic_dragon_fire_3.png",
+    "assets/images/pic_dragon_fire_4.png",
+  ];
+
+  let textureArray_dragonfire: PIXI.Texture[] = [];
+
+  for (let i: number = 0; i < 4; i++) {
+    let texture_dragonfire: PIXI.Texture = PIXI.Texture.from(
+      dragonfireImages[i]
+    );
+    textureArray_dragonfire.push(texture_dragonfire);
+  }
+  dragonfire = new PIXI.AnimatedSprite(textureArray_dragonfire);
+  dragonfire.scale.x = dragonfire.scale.y = 0.5;
+  dragonfire.x = 391;
+  dragonfire.y = 100;
+  // dragonfire.anchor.set(0.5);
+  dragonfire.animationSpeed = 1;
+  dragonfire.play();
+  dragonfire.loop = false;
+  // anim.tint = 0x000000;
+  dragonfire.visible = false;
+  // dragonfire.stop();
+  dragonfire.onComplete = () => {
+    console.log("dragonfire.totalFrames: ", dragonfire.totalFrames);
+    console.log("dragonfire animation end");
+    console.log("dragonfire animation speed", dragonfire.animationSpeed);
+    dragonfire.stop();
+    dragonfire.visible = false;
+    dragonfireFlag = true;
+  };
+  gameScene.addChild(dragonfire);
 
   // 3. CREATE MONSTER
 
@@ -551,7 +632,7 @@ const gameSetup = (resources: any): void => {
     // org
     // blob_vy[i] = blob_speed * blob_direction;
     // random speed
-    blob_speed = Math.floor(Math.random() * 3) + 1;
+    blob_speed = randomInt(1, 3);
     blob_vy[i] = blob_speed * blob_direction;
 
     // Reverse the direction of the next blob.
