@@ -1,6 +1,6 @@
 # Test to move character with cursor key, on pixijs.
 
-<img src="https://evofan.github.io/pixijs_test_character_move/screenshot/pic_screenshot3.jpg" width="50%">  
+<img src="https://evofan.github.io/pixijs_test_character_move/screenshot/pic_screenshot4.jpg" width="50%">  
 
 Demo  
 [https://evofan.github.io/pixijs_test_character_move/dist/](https://evofan.github.io/pixijs_test_character_move/dist/)  
