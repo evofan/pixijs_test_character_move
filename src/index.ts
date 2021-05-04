@@ -601,6 +601,10 @@ const gameSetup = (resources: any): void => {
   };
   gameScene.addChild(dragonfire);
 
+  let colorMatrix: any = new PIXI.filters.ColorMatrixFilter();
+  dragonfire.filters = [colorMatrix];
+  colorMatrix.contrast(1, false);
+
   // 3. CREATE MONSTER
 
   // Six blob (small chunks) monsters are created in one loop.
