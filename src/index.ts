@@ -181,6 +181,21 @@ let text_pixiVersion: PIXI.Text,
   text_fps: PIXI.Text,
   text_bgm: PIXI.Text;
 let text_hp_num: PIXI.Text;
+let text_loading: PIXI.Text;
+
+// text loading
+text_loading = setText(
+  "Loading asset data ....",
+  "Arial",
+  20,
+  0x333333,
+  "left",
+  "normal"
+);
+container.addChild(text_loading);
+text_loading.x = 10;
+text_loading.y = 10;
+requestAnimationFrame(animate);
 
 if (ASSET_BG === "") {
   console.log("Don't use background image.");
@@ -209,6 +224,8 @@ loader.add("obj_14_data", ASSET_OBJ14);
 loader.load((loader: PIXI.Loader, resources: any) => {
   console.log(loader);
   console.log(resources);
+
+  container.removeChild(text_loading);
 
   // bg
   if (ASSET_BG !== "") {
