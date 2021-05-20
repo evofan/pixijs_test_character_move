@@ -74,6 +74,12 @@ let animate: FrameRequestCallback = (): void => {
   stats.end();
 };
 
+let animateLoading: FrameRequestCallback = (): void => {
+  console.log("animateLoading()");
+  renderer.render(stage);
+  // requestAnimationFrame(animateLoading);
+};
+
 // loader
 let loader: PIXI.Loader = new PIXI.Loader();
 
@@ -96,6 +102,9 @@ const ASSET_OBJ12: string = ASSETS.ASSET_OBJ12;
 const ASSET_OBJ13: string = ASSETS.ASSET_OBJ13;
 
 const ASSET_OBJ14: string = ASSETS.ASSET_OBJ14;
+
+const ASSET_OBJ15: string = ASSETS.ASSET_OBJ15;
+const ASSET_OBJ16: string = ASSETS.ASSET_OBJ16;
 
 // container
 let container: PIXI.Container = new PIXI.Container();
@@ -163,6 +172,9 @@ let arrow_white_left: PIXI.Sprite,
   arrow_red_right: PIXI.Sprite,
   arrow_red_down: PIXI.Sprite;
 
+// arrow for pad use
+let pad_circle: PIXI.Sprite, pad_arrow: PIXI.Sprite;
+
 // bgm button
 let bt_bgm_on: PIXI.Sprite;
 let bt_bgm_off: PIXI.Sprite;
@@ -188,14 +200,14 @@ text_loading = setText(
   "Loading asset data ....",
   "Arial",
   20,
-  0x333333,
+  0xffffff,
   "left",
   "normal"
 );
 container.addChild(text_loading);
 text_loading.x = 10;
 text_loading.y = 10;
-requestAnimationFrame(animate);
+requestAnimationFrame(animateLoading);
 
 if (ASSET_BG === "") {
   console.log("Don't use background image.");
@@ -221,11 +233,16 @@ loader.add("obj_12_data", ASSET_OBJ12);
 loader.add("obj_13_data", ASSET_OBJ13);
 loader.add("obj_14_data", ASSET_OBJ14);
 
+loader.add("obj_15_data", ASSET_OBJ15);
+loader.add("obj_16_data", ASSET_OBJ16);
+
 loader.load((loader: PIXI.Loader, resources: any) => {
   console.log(loader);
   console.log(resources);
 
   container.removeChild(text_loading);
+  let temp: number = requestAnimationFrame(animateLoading);
+  cancelAnimationFrame(temp);
 
   // bg
   if (ASSET_BG !== "") {
@@ -881,6 +898,41 @@ const gameSetup = (resources: any): void => {
   arrow_red_down.y = 440;
   arrow_red_down.visible = false;
   container.addChild(arrow_red_down);
+
+  // navigation pad
+  // base
+  pad_circle = new PIXI.Sprite(resources.obj_15_data.texture);
+  pad_circle.scale.x = pad_circle.scale.y = 0.5;
+  pad_circle.angle = 180;
+  pad_circle.x = 140;
+  pad_circle.y = 475;
+  pad_circle.alpha = 0.75;
+  container.addChild(pad_circle);
+  // right
+  pad_arrow = new PIXI.Sprite(resources.obj_16_data.texture);
+  pad_arrow.scale.x = pad_arrow.scale.y = 0.5;
+  pad_arrow.angle = 0;
+  pad_arrow.x = 94;
+  pad_arrow.y = 406;
+  pad_arrow.alpha = 0.75;
+  pad_arrow.buttonMode = true;
+  pad_arrow.interactive = true;
+  container.addChild(pad_arrow);
+
+  pad_arrow.on("tap", (event: MouseEvent) => {
+    console.log("pad_arrow tap!");
+    explorer_vx = explorer_speed;
+    explorer_vy = 0;
+    arrow_white_right.visible = false;
+    arrow_red_right.visible = true;
+  });
+  pad_arrow.on("click", (event: MouseEvent) => {
+    console.log("pad_arrow click!");
+    explorer_vx = explorer_speed;
+    explorer_vy = 0;
+    arrow_white_right.visible = false;
+    arrow_red_right.visible = true;
+  });
 
   // navigation bgm button
   // on
