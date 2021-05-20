@@ -13,7 +13,12 @@ import { Howl, Howler } from "howler"; // npm install --save @types/howler
 import { gsap } from "gsap"; // npm install -D @types/gsap
 
 import { PixiPlugin } from "gsap/PixiPlugin";
-import { AnimatedSprite, DisplayObject, Sprite } from "pixi.js";
+import {
+  AnimatedSprite,
+  DisplayObject,
+  InteractionEvent,
+  Sprite,
+} from "pixi.js";
 
 // register the plugin
 gsap.registerPlugin(PixiPlugin);
@@ -173,7 +178,11 @@ let arrow_white_left: PIXI.Sprite,
   arrow_red_down: PIXI.Sprite;
 
 // arrow for pad use
-let pad_circle: PIXI.Sprite, pad_arrow: PIXI.Sprite;
+let pad_circle: PIXI.Sprite,
+  pad_arrow_right: PIXI.Sprite,
+  pad_arrow_left: PIXI.Sprite,
+  pad_arrow_up: PIXI.Sprite,
+  pad_arrow_down: PIXI.Sprite;
 
 // bgm button
 let bt_bgm_on: PIXI.Sprite;
@@ -909,16 +918,51 @@ const gameSetup = (resources: any): void => {
   pad_circle.alpha = 0.75;
   container.addChild(pad_circle);
   // right
-  pad_arrow = new PIXI.Sprite(resources.obj_16_data.texture);
-  pad_arrow.scale.x = pad_arrow.scale.y = 0.5;
-  pad_arrow.angle = 0;
-  pad_arrow.x = 94;
-  pad_arrow.y = 406;
-  pad_arrow.alpha = 0.75;
-  pad_arrow.buttonMode = true;
-  pad_arrow.interactive = true;
-  container.addChild(pad_arrow);
+  pad_arrow_right = new PIXI.Sprite(resources.obj_16_data.texture);
+  pad_arrow_right.scale.x = pad_arrow_right.scale.y = 0.5;
+  pad_arrow_right.angle = 0;
+  pad_arrow_right.x = 100;
+  pad_arrow_right.y = 406;
+  pad_arrow_right.alpha = 0.75;
+  pad_arrow_right.buttonMode = true;
+  pad_arrow_right.interactive = true;
+  pad_arrow_right.name = "right";
+  container.addChild(pad_arrow_right);
+  // left
+  pad_arrow_left = new PIXI.Sprite(resources.obj_16_data.texture);
+  pad_arrow_left.scale.x = pad_arrow_left.scale.y = 0.5;
+  pad_arrow_left.angle = 180;
+  pad_arrow_left.x = 80;
+  pad_arrow_left.y = 445;
+  pad_arrow_left.alpha = 0.75;
+  pad_arrow_left.buttonMode = true;
+  pad_arrow_left.interactive = true;
+  pad_arrow_left.name = "left";
+  container.addChild(pad_arrow_left);
+  // up
+  pad_arrow_up = new PIXI.Sprite(resources.obj_16_data.texture);
+  pad_arrow_up.scale.x = pad_arrow_up.scale.y = 0.5;
+  pad_arrow_up.angle = -90;
+  pad_arrow_up.x = 72;
+  pad_arrow_up.y = 410;
+  pad_arrow_up.alpha = 0.75;
+  pad_arrow_up.buttonMode = true;
+  pad_arrow_up.interactive = true;
+  pad_arrow_up.name = "up";
+  container.addChild(pad_arrow_up);
+  // down
+  pad_arrow_down = new PIXI.Sprite(resources.obj_16_data.texture);
+  pad_arrow_down.scale.x = pad_arrow_down.scale.y = 0.5;
+  pad_arrow_down.angle = 90;
+  pad_arrow_down.x = 110;
+  pad_arrow_down.y = 440;
+  pad_arrow_down.alpha = 0.75;
+  pad_arrow_down.buttonMode = true;
+  pad_arrow_down.interactive = true;
+  pad_arrow_down.name = "down";
+  container.addChild(pad_arrow_down);
 
+  /*
   pad_arrow.on("tap", (event: MouseEvent) => {
     console.log("pad_arrow tap!");
     explorer_vx = explorer_speed;
@@ -932,7 +976,17 @@ const gameSetup = (resources: any): void => {
     explorer_vy = 0;
     arrow_white_right.visible = false;
     arrow_red_right.visible = true;
-  });
+  });*/
+  pad_arrow_right.on("pointerdown", onBtnDown);
+  pad_arrow_right.on("pointerup", onBtnUp);
+  pad_arrow_left.on("pointerdown", onBtnDown);
+  pad_arrow_left.on("pointerup", onBtnUp);
+  pad_arrow_up.on("pointerdown", onBtnDown);
+  pad_arrow_up.on("pointerup", onBtnUp);
+  pad_arrow_down.on("pointerdown", onBtnDown);
+  pad_arrow_down.on("pointerup", onBtnUp);
+  // pad_arrow.on("pointerupoutside", onBtnOutside);
+  // pad_arrow.on("pointermove", onBtnMove);
 
   // navigation bgm button
   // on
@@ -1124,3 +1178,68 @@ const setHpNum = (e: number) => {
   text_hp_num.x = 335;
   text_hp_num.y = 5;
 };
+
+/**
+ * start drag
+ * @param { object } e
+ */
+let onBtnDown = (e: InteractionEvent) => {
+  console.log("onBtnDown()", e.currentTarget.name);
+  switch (e.currentTarget.name) {
+    case "right":
+      pad_arrow_right.tint = 0xff0033;
+      //isCatDragging = true;
+      explorer_vx = explorer_speed;
+      explorer_vy = 0;
+      break;
+    case "left":
+      pad_arrow_left.tint = 0xff0033;
+      explorer_vx = -explorer_speed;
+      explorer_vy = 0;
+      break;
+    case "up":
+      pad_arrow_up.tint = 0xff0033;
+      //isCatDragging = true;
+      explorer_vx = 0;
+      explorer_vy = -explorer_speed;
+      break;
+    case "down":
+      pad_arrow_down.tint = 0xff0033;
+      explorer_vx = -0;
+      explorer_vy = explorer_speed;
+      break;
+    default:
+      console.log("no use");
+  }
+};
+
+let onBtnUp = (e: InteractionEvent) => {
+  console.log("onBtnUp()", e.currentTarget.name);
+  switch (e.currentTarget.name) {
+    case "right":
+      pad_arrow_right.tint = 0xffffff;
+      explorer_vx = 0;
+      explorer_vy = 0;
+      break;
+    case "left":
+      pad_arrow_left.tint = 0xffffff;
+      explorer_vx = 0;
+      explorer_vy = 0;
+      break;
+    case "up":
+      pad_arrow_up.tint = 0xffffff;
+      explorer_vx = 0;
+      explorer_vy = 0;
+      break;
+    case "down":
+      pad_arrow_down.tint = 0xffffff;
+      explorer_vx = 0;
+      explorer_vy = 0;
+      break;
+    default:
+      console.log("no use");
+  }
+};
+
+// pad_arrow.on("pointerupoutside", onBtnOutside);
+// pad_arrow.on("pointermove", onBtnMove);
