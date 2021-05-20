@@ -1,8 +1,8 @@
-# Test to move character with cursor key, on pixijs.
+# Test to move character with cursor key or virtual pad, on pixijs.
 
-<img src="https://evofan.github.io/pixijs_test_character_move/screenshot/pic_screenshot4.jpg" width="50%">  
+<img src="https://evofan.github.io/pixijs_test_character_move/screenshot/pic_screenshot5.jpg" width="50%">  
 
-Demo  
+Demo Play  
 [https://evofan.github.io/pixijs_test_character_move/dist/](https://evofan.github.io/pixijs_test_character_move/dist/)  
 
 reference  
@@ -17,6 +17,7 @@ add webpack
 add sound  
 add GSAP with PixiPlugin  
 add animated sprite  
+add virtual pad button  
 
 goldfire / howler.js  
 [https://github.com/goldfire/howler.js](https://github.com/goldfire/howler.js)  
