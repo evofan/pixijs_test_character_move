@@ -979,13 +979,16 @@ const gameSetup = (resources: any): void => {
   });*/
   pad_arrow_right.on("pointerdown", onBtnDown);
   pad_arrow_right.on("pointerup", onBtnUp);
+  pad_arrow_right.on("pointerupoutside", onBtnOutside);
   pad_arrow_left.on("pointerdown", onBtnDown);
   pad_arrow_left.on("pointerup", onBtnUp);
+  pad_arrow_left.on("pointerupoutside", onBtnOutside);
   pad_arrow_up.on("pointerdown", onBtnDown);
   pad_arrow_up.on("pointerup", onBtnUp);
+  pad_arrow_up.on("pointerupoutside", onBtnOutside);
   pad_arrow_down.on("pointerdown", onBtnDown);
   pad_arrow_down.on("pointerup", onBtnUp);
-  // pad_arrow.on("pointerupoutside", onBtnOutside);
+  pad_arrow_down.on("pointerupoutside", onBtnOutside);
   // pad_arrow.on("pointermove", onBtnMove);
 
   // navigation bgm button
@@ -1180,7 +1183,7 @@ const setHpNum = (e: number) => {
 };
 
 /**
- * start drag
+ * btn down
  * @param { object } e
  */
 let onBtnDown = (e: InteractionEvent) => {
@@ -1188,7 +1191,6 @@ let onBtnDown = (e: InteractionEvent) => {
   switch (e.currentTarget.name) {
     case "right":
       pad_arrow_right.tint = 0xff0033;
-      //isCatDragging = true;
       explorer_vx = explorer_speed;
       explorer_vy = 0;
       break;
@@ -1199,13 +1201,12 @@ let onBtnDown = (e: InteractionEvent) => {
       break;
     case "up":
       pad_arrow_up.tint = 0xff0033;
-      //isCatDragging = true;
       explorer_vx = 0;
       explorer_vy = -explorer_speed;
       break;
     case "down":
       pad_arrow_down.tint = 0xff0033;
-      explorer_vx = -0;
+      explorer_vx = 0;
       explorer_vy = explorer_speed;
       break;
     default:
@@ -1213,33 +1214,58 @@ let onBtnDown = (e: InteractionEvent) => {
   }
 };
 
+/**
+ * btn up
+ * @param e
+ */
 let onBtnUp = (e: InteractionEvent) => {
   console.log("onBtnUp()", e.currentTarget.name);
+  explorer_vx = 0;
+  explorer_vy = 0;
   switch (e.currentTarget.name) {
     case "right":
       pad_arrow_right.tint = 0xffffff;
-      explorer_vx = 0;
-      explorer_vy = 0;
       break;
     case "left":
       pad_arrow_left.tint = 0xffffff;
-      explorer_vx = 0;
-      explorer_vy = 0;
       break;
     case "up":
       pad_arrow_up.tint = 0xffffff;
-      explorer_vx = 0;
-      explorer_vy = 0;
       break;
     case "down":
       pad_arrow_down.tint = 0xffffff;
-      explorer_vx = 0;
-      explorer_vy = 0;
       break;
     default:
       console.log("no use");
+      break;
   }
 };
 
-// pad_arrow.on("pointerupoutside", onBtnOutside);
+/**
+ * btn out
+ * @param e
+ */
+let onBtnOutside = (e: InteractionEvent) => {
+  console.log("onBtnOutside()", e.currentTarget.name);
+  explorer_vx = 0;
+  explorer_vy = 0;
+  switch (e.currentTarget.name) {
+    case "right":
+      pad_arrow_right.tint = 0xffffff;
+      break;
+    case "left":
+      pad_arrow_left.tint = 0xffffff;
+      break;
+    case "up":
+      pad_arrow_up.tint = 0xffffff;
+      break;
+    case "down":
+      pad_arrow_down.tint = 0xffffff;
+      break;
+    default:
+      console.log("no use");
+      break;
+  }
+};
+
 // pad_arrow.on("pointermove", onBtnMove);
